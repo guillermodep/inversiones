@@ -8,7 +8,6 @@ import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
 import FadeIn from '@/components/ui/FadeIn'
 import CountUp from '@/components/ui/CountUp'
 import MarketHeatmap from '@/components/ui/MarketHeatmap'
-import InvestmentQuote from '@/components/ui/InvestmentQuote'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 import { getCache, setCache } from '@/utils/cache'
 import { TrendingUp, TrendingDown, Newspaper, AlertTriangle, Wallet, PieChart, BarChart3, Activity } from 'lucide-react'
@@ -50,6 +49,9 @@ export default function Dashboard() {
   const [loadingNews, setLoadingNews] = useState(true)
   const [loadingTopMovers, setLoadingTopMovers] = useState(true)
   const [loadingHeatmap, setLoadingHeatmap] = useState(true)
+  
+  // Prevent unused variable warnings
+  const _debug = { loadingIndices, loadingNews, loadingTopMovers, loadingHeatmap }
 
   useEffect(() => {
     loadDashboardData()
