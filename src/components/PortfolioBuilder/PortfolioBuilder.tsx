@@ -4,7 +4,7 @@ import { getStockQuote } from '@/services/marketDataService'
 import { StockData } from '@/types'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { Trash2 } from 'lucide-react'
+import { Trash2, Search, Plus } from 'lucide-react'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 export default function PortfolioBuilder() {
@@ -16,6 +16,9 @@ export default function PortfolioBuilder() {
   const [loading, setLoading] = useState(false)
   const [portfolioName, setPortfolioName] = useState('')
   const [investmentAmount, setInvestmentAmount] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResult, setSearchResult] = useState<StockData | null>(null)
+  const [searching, setSearching] = useState(false)
 
   useEffect(() => {
     if (horizon && risk) {
@@ -125,6 +128,40 @@ export default function PortfolioBuilder() {
     
     setRecommendations(recs)
     setLoading(false)
+  }
+
+  async function handleSearch(e: React.FormEvent) {
+    e.preventDefault()
+    if (!searchQuery.trim()) return
+
+    setSearching(true)
+    setSearchResult(null)
+    
+    try {
+      const stock = await getStockQuote(searchQuery.toUpperCase().trim())
+      setSearchResult(stock)
+    } catch (error) {
+      console.error('Search error:', error)
+      alert('No se encontró el instrumento. Verifica el ticker.')
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  function addSearchResult() {
+    if (!searchResult) return
+    
+    if (selectedStocks.find(s => s.stock.ticker === searchResult.ticker)) {
+      alert('Este instrumento ya está en tu portfolio')
+      return
+    }
+    
+    const remainingAllocation = 100 - selectedStocks.reduce((sum, s) => sum + s.allocation, 0)
+    const suggestedAllocation = Math.min(remainingAllocation, 20)
+    
+    setSelectedStocks([...selectedStocks, { stock: searchResult, allocation: suggestedAllocation }])
+    setSearchQuery('')
+    setSearchResult(null)
   }
 
   function acceptAllRecommendations() {
@@ -277,22 +314,72 @@ export default function PortfolioBuilder() {
 
         {/* Recomendaciones */}
         <Card className="lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Recomendaciones Personalizadas</h2>
-            {recommendations.length > 0 && (
-              <Button size="sm" onClick={acceptAllRecommendations}>
-                Aceptar Todas
+          {/* Buscador de instrumentos */}
+          <div className="mb-6">
+            <h3 className="text-lg font-bold mb-3">Buscar Instrumento</h3>
+            <form onSubmit={handleSearch} className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar por ticker (ej: AAPL, TSLA, SPY)"
+                  className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-2"
+                />
+              </div>
+              <Button type="submit" disabled={searching || !searchQuery.trim()}>
+                {searching ? 'Buscando...' : 'Buscar'}
               </Button>
+            </form>
+            
+            {searchResult && (
+              <div className="mt-3 p-4 bg-background rounded-lg border border-blue-500/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="font-bold text-lg">{searchResult.ticker}</p>
+                    </div>
+                    <p className="text-sm text-gray-400">{searchResult.name}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="font-medium">{formatCurrency(searchResult.price)}</p>
+                      <p className={`text-sm ${searchResult.changePercent >= 0 ? 'text-profit' : 'text-loss'}`}>
+                        {formatPercent(searchResult.changePercent)}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={addSearchResult}
+                      disabled={selectedStocks.find(s => s.stock.ticker === searchResult.ticker) !== undefined}
+                    >
+                      <Plus size={16} className="mr-1" />
+                      Agregar
+                    </Button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
-          
-          {!horizon || !risk ? (
-            <p className="text-gray-400 text-center py-8">Selecciona horizonte temporal y tolerancia al riesgo para ver recomendaciones</p>
-          ) : loading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+
+          <div className="border-t border-border pt-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Recomendaciones Personalizadas</h2>
+              {recommendations.length > 0 && (
+                <Button size="sm" onClick={acceptAllRecommendations}>
+                  Aceptar Todas
+                </Button>
+              )}
             </div>
-          ) : (
+            
+            {!horizon || !risk ? (
+              <p className="text-gray-400 text-center py-8">Selecciona horizonte temporal y tolerancia al riesgo para ver recomendaciones</p>
+            ) : loading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+              </div>
+            ) : (
             <div className="space-y-3">
               {recommendations.map((rec) => (
                 <div
@@ -331,7 +418,8 @@ export default function PortfolioBuilder() {
                 </div>
               ))}
             </div>
-          )}
+            )}
+          </div>
         </Card>
       </div>
 
