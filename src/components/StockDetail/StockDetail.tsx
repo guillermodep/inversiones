@@ -26,6 +26,13 @@ export default function StockDetail() {
   useEffect(() => {
     if (ticker) {
       loadStockData()
+      
+      // Auto-refresh stock data every 60 seconds
+      const interval = setInterval(() => {
+        refreshStockPrice()
+      }, 60000) // 60 seconds
+      
+      return () => clearInterval(interval)
     }
   }, [ticker])
 
@@ -34,6 +41,17 @@ export default function StockDetail() {
       handleAnalyze()
     }
   }, [stock, historical, news])
+
+  async function refreshStockPrice() {
+    if (!ticker) return
+    try {
+      const stockData = await getStockQuote(ticker)
+      setStock(stockData)
+      console.log(`🔄 Stock price refreshed for ${ticker}`)
+    } catch (error) {
+      console.error('Error refreshing stock price:', error)
+    }
+  }
 
   async function loadStockData() {
     if (!ticker) return
