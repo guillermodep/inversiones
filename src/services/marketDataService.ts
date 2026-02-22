@@ -46,6 +46,7 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
   // Try Alpha Vantage first (works in production)
   if (env.marketData.alphaVantageKey) {
     try {
+      console.log(`🔍 Fetching ${ticker} from Alpha Vantage...`)
       const response = await axios.get(ALPHA_VANTAGE_BASE, {
         params: {
           function: 'GLOBAL_QUOTE',
@@ -54,6 +55,8 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
         },
         timeout: 10000,
       })
+
+      console.log(`📡 Alpha Vantage response for ${ticker}:`, response.data)
 
       const quote = response.data['Global Quote']
       if (quote && quote['01. symbol']) {
@@ -64,28 +67,34 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
 
         const data: StockData = {
           ticker: quote['01. symbol'],
-          name: ticker, // Alpha Vantage doesn't provide company name in GLOBAL_QUOTE
+          name: ticker,
           price: currentPrice,
           change: change,
           changePercent: changePercent,
           volume: parseInt(quote['06. volume']),
-          marketCap: 0, // Not available in GLOBAL_QUOTE
+          marketCap: 0,
           open: parseFloat(quote['02. open']),
           high: parseFloat(quote['03. high']),
           low: parseFloat(quote['04. low']),
           previousClose: previousClose,
         }
 
+        console.log(`✅ Alpha Vantage data for ${ticker}:`, data)
         setCache(cacheKey, data)
         return data
+      } else {
+        console.warn(`⚠️ Alpha Vantage returned empty data for ${ticker}`)
       }
     } catch (error: any) {
-      console.warn(`Alpha Vantage failed for ${ticker}:`, error.message)
+      console.error(`❌ Alpha Vantage failed for ${ticker}:`, error.message, error.response?.data)
     }
+  } else {
+    console.warn(`⚠️ No Alpha Vantage API key configured`)
   }
 
   // Fallback to Yahoo Finance proxy (works in development)
   try {
+    console.log(`🔍 Trying Yahoo Finance for ${ticker}...`)
     const response = await axios.get(`/api/yahoo/v8/finance/chart/${ticker}`, {
       params: {
         interval: '1d',
@@ -106,6 +115,8 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
     if (!meta || !quote) {
       throw new Error('Missing meta or quote data')
     }
+
+    console.log(`✅ Using Yahoo Finance data for ${ticker}`)
 
     const currentPrice = meta.regularMarketPrice || quote.close?.[quote.close.length - 1] || 0
     const previousClose = meta.previousClose || meta.chartPreviousClose || currentPrice
@@ -143,13 +154,14 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
     setCache(cacheKey, data)
     return data
   } catch (error: any) {
-    console.error(`All data sources failed for ${ticker}:`, error.message)
-    // Last resort: use mock data
-    console.warn(`⚠️ Using mock data for ${ticker} as all APIs failed`)
-    const data = generateMockQuote(ticker)
-    setCache(cacheKey, data)
-    return data
+    console.error(`❌ Yahoo Finance also failed for ${ticker}:`, error.message)
   }
+
+  // Last resort: use mock data
+  console.error(`🚨 ALL APIs FAILED for ${ticker} - Using mock data`)
+  const data = generateMockQuote(ticker)
+  setCache(cacheKey, data)
+  return data
 }
 
 function generateSampleData(range: string, basePrice: number = 150): HistoricalData[] {
