@@ -190,15 +190,12 @@ export default function Screener() {
     const allocationPerStock = Math.floor(100 / results.length)
     const remainder = 100 - (allocationPerStock * results.length)
 
-    const positions = results.map((stock, index) => {
-      const allocation = index === 0 ? allocationPerStock + remainder : allocationPerStock
-      return {
-        ticker: stock.ticker,
-        shares: 0, // User will need to set investment amount later
-        purchasePrice: stock.price,
-        purchaseDate: new Date().toISOString().split('T')[0],
-      }
-    })
+    const positions = results.map((stock) => ({
+      ticker: stock.ticker,
+      shares: 0, // User will need to set investment amount later
+      purchasePrice: stock.price,
+      purchaseDate: new Date().toISOString().split('T')[0],
+    }))
 
     const newPortfolio = {
       id: Date.now().toString(),
