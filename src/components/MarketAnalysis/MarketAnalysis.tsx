@@ -71,7 +71,25 @@ export default function MarketAnalysis() {
     }
   }
 
+  function getInstrumentType(ticker: string): string {
+    // ETFs populares
+    const etfs = ['SPY', 'QQQ', 'IWM', 'VTI', 'VOO', 'DIA', 'EEM', 'GLD', 'SLV', 'XLF', 'XLE', 'XLK', 'XLV', 'XLI', 'XLP', 'XLY', 'XLU', 'XLB', 'XLRE', 'VEA', 'VWO', 'IEFA', 'IEMG', 'AGG', 'BND', 'VNQ', 'VCIT', 'VCSH', 'BSV', 'BIV', 'BLV']
+    
+    // Bonos y renta fija
+    const bonds = ['TLT', 'IEF', 'SHY', 'AGG', 'BND', 'LQD', 'HYG', 'MUB', 'TIP', 'VCIT', 'VCSH', 'BSV', 'BIV', 'BLV']
+    
+    if (bonds.includes(ticker)) {
+      return 'Bono/ETF Renta Fija'
+    } else if (etfs.includes(ticker)) {
+      return 'ETF'
+    } else {
+      return 'Acción'
+    }
+  }
+
   function StockRow({ stock }: { stock: StockData }) {
+    const instrumentType = getInstrumentType(stock.ticker)
+    
     return (
       <tr
         onClick={() => navigate(`/stock/${stock.ticker}`)}
@@ -80,7 +98,9 @@ export default function MarketAnalysis() {
         <td className="py-3 px-4">
           <div>
             <p className="font-medium">{stock.ticker}</p>
-            <p className="text-sm text-gray-400">{stock.name}</p>
+            <p className="text-sm text-gray-400">
+              {stock.name} <span className="italic text-gray-500">({instrumentType})</span>
+            </p>
           </div>
         </td>
         <td className="py-3 px-4 text-right">{formatCurrency(stock.price)}</td>
