@@ -101,6 +101,35 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
 
       console.log(`✅ Netlify Function data for ${ticker}:`, data)
       console.log(`📊 Data completeness: P/E=${!!data.peRatio}, MktCap=${!!data.marketCap}, AvgVol=${!!data.avgVolume}, Yield=${!!data.dividendYield}, Beta=${!!data.beta}, EPS=${!!data.eps}`)
+      
+      // If fundamental data is missing, try to get it from quoteSummary endpoint
+      if (!data.marketCap || !data.peRatio || !data.beta || !data.eps) {
+        try {
+          console.log(`🔍 Fetching fundamentals for ${ticker} from quoteSummary...`)
+          const fundResponse = await axios.get(`/.netlify/functions/stock-fundamentals`, {
+            params: { ticker },
+            timeout: 5000,
+          })
+          
+          const fundamentals = fundResponse.data
+          console.log(`📊 Fundamentals from quoteSummary:`, fundamentals)
+          
+          // Merge fundamental data
+          data.marketCap = data.marketCap || fundamentals.marketCap || 0
+          data.peRatio = data.peRatio || fundamentals.peRatio
+          data.beta = data.beta || fundamentals.beta
+          data.eps = data.eps || fundamentals.eps
+          data.dividendYield = data.dividendYield || (fundamentals.dividendYield ? fundamentals.dividendYield * 100 : undefined)
+          data.avgVolume = data.avgVolume || fundamentals.avgVolume
+          data.fiftyTwoWeekHigh = data.fiftyTwoWeekHigh || fundamentals.fiftyTwoWeekHigh
+          data.fiftyTwoWeekLow = data.fiftyTwoWeekLow || fundamentals.fiftyTwoWeekLow
+          
+          console.log(`✅ Merged data for ${ticker}:`, data)
+        } catch (error: any) {
+          console.warn(`⚠️ Could not fetch fundamentals for ${ticker}:`, error.message)
+        }
+      }
+      
       setCache(cacheKey, data)
       return data
     }
