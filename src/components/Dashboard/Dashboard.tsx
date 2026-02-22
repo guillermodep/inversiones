@@ -8,6 +8,7 @@ import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
 import FadeIn from '@/components/ui/FadeIn'
 import CountUp from '@/components/ui/CountUp'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
+import { getCache, setCache } from '@/utils/cache'
 import { TrendingUp, TrendingDown, Newspaper, AlertTriangle, Wallet, PieChart, BarChart3, Activity } from 'lucide-react'
 import { hasLLMConfig } from '@/config/env'
 import { Link, useNavigate } from 'react-router-dom'
@@ -50,12 +51,36 @@ export default function Dashboard() {
   async function loadDashboardData() {
     setLoading(true)
     try {
+      // Try to load from cache first
+      const cachedIndices = getCache<StockData[]>('dashboard_indices')
+      const cachedNews = getCache<NewsItem[]>('dashboard_news')
+      const cachedTopMovers = getCache<{ gainers: TopMover[], losers: TopMover[] }>('dashboard_top_movers')
+      
+      // If we have cached data, use it immediately
+      if (cachedIndices && cachedNews && cachedTopMovers) {
+        setIndices(cachedIndices)
+        setNews(cachedNews)
+        setTopGainers(cachedTopMovers.gainers)
+        setTopLosers(cachedTopMovers.losers)
+        setLoading(false)
+        
+        // Still calculate portfolio metrics (they depend on current prices)
+        await calculatePortfolioMetrics()
+        return
+      }
+      
+      // If no cache, fetch fresh data
       const [indicesData, newsData] = await Promise.all([
         getMarketIndices(),
         getMarketNews(),
       ])
+      
       setIndices(indicesData)
       setNews(newsData)
+      
+      // Cache the data
+      setCache('dashboard_indices', indicesData)
+      setCache('dashboard_news', newsData)
       
       await calculatePortfolioMetrics()
       await loadTopMovers()
@@ -123,8 +148,14 @@ export default function Dashboard() {
     }
 
     const sorted = stocks.sort((a, b) => b.changePercent - a.changePercent)
-    setTopGainers(sorted.slice(0, 5))
-    setTopLosers(sorted.slice(-5).reverse())
+    const gainers = sorted.slice(0, 5)
+    const losers = sorted.slice(-5).reverse()
+    
+    setTopGainers(gainers)
+    setTopLosers(losers)
+    
+    // Cache top movers
+    setCache('dashboard_top_movers', { gainers, losers })
   }
 
   function getSector(ticker: string): string {

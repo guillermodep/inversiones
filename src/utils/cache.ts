@@ -1,6 +1,6 @@
 import { CacheEntry } from '@/types'
 
-const CACHE_DURATION = 15 * 60 * 1000
+const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
 export function setCache<T>(key: string, data: T): void {
   const entry: CacheEntry<T> = {
