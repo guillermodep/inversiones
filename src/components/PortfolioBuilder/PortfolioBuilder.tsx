@@ -15,6 +15,7 @@ export default function PortfolioBuilder() {
   const [selectedStocks, setSelectedStocks] = useState<Array<{ stock: StockData; allocation: number }>>([])
   const [loading, setLoading] = useState(false)
   const [portfolioName, setPortfolioName] = useState('')
+  const [investmentAmount, setInvestmentAmount] = useState('')
 
   useEffect(() => {
     if (horizon && risk) {
@@ -158,12 +159,24 @@ export default function PortfolioBuilder() {
       return
     }
 
-    const positions = selectedStocks.map(item => ({
-      ticker: item.stock.ticker,
-      shares: 0,
-      purchasePrice: item.stock.price,
-      purchaseDate: new Date().toISOString().split('T')[0],
-    }))
+    if (!investmentAmount || parseFloat(investmentAmount) <= 0) {
+      alert('Ingresa un monto a invertir válido')
+      return
+    }
+
+    const amount = parseFloat(investmentAmount)
+
+    const positions = selectedStocks.map(item => {
+      const allocatedAmount = (amount * item.allocation) / 100
+      const shares = Math.floor(allocatedAmount / item.stock.price)
+      
+      return {
+        ticker: item.stock.ticker,
+        shares,
+        purchasePrice: item.stock.price,
+        purchaseDate: new Date().toISOString().split('T')[0],
+      }
+    })
 
     const newPortfolio = {
       id: Date.now().toString(),
@@ -178,6 +191,7 @@ export default function PortfolioBuilder() {
     
     setSelectedStocks([])
     setPortfolioName('')
+    setInvestmentAmount('')
     setHorizon('')
     setRisk('')
     setRecommendations([])
@@ -205,6 +219,19 @@ export default function PortfolioBuilder() {
                 value={portfolioName}
                 onChange={(e) => setPortfolioName(e.target.value)}
                 placeholder="Mi Portfolio 2026"
+                className="w-full bg-background border border-border rounded-lg px-4 py-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Monto a Invertir (USD)</label>
+              <input
+                type="number"
+                value={investmentAmount}
+                onChange={(e) => setInvestmentAmount(e.target.value)}
+                placeholder="10000"
+                min="0"
+                step="100"
                 className="w-full bg-background border border-border rounded-lg px-4 py-2"
               />
             </div>
@@ -332,36 +359,54 @@ export default function PortfolioBuilder() {
                   <th className="py-2 px-4">Nombre</th>
                   <th className="py-2 px-4 text-right">Precio</th>
                   <th className="py-2 px-4 text-right">Asignación %</th>
+                  {investmentAmount && <th className="py-2 px-4 text-right">Monto</th>}
+                  {investmentAmount && <th className="py-2 px-4 text-right">Acciones</th>}
                   <th className="py-2 px-4"></th>
                 </tr>
               </thead>
               <tbody>
-                {selectedStocks.map(({ stock, allocation }) => (
-                  <tr key={stock.ticker} className="border-b border-border">
-                    <td className="py-3 px-4 font-medium">{stock.ticker}</td>
-                    <td className="py-3 px-4 text-sm text-gray-400">{stock.name}</td>
-                    <td className="py-3 px-4 text-right">{formatCurrency(stock.price)}</td>
-                    <td className="py-3 px-4">
-                      <input
-                        type="number"
-                        value={allocation}
-                        onChange={(e) => updateAllocation(stock.ticker, parseFloat(e.target.value) || 0)}
-                        min="0"
-                        max="100"
-                        step="5"
-                        className="w-20 bg-background border border-border rounded px-2 py-1 text-right"
-                      />
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => removeFromPortfolio(stock.ticker)}
-                        className="text-red-500 hover:text-red-400"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {selectedStocks.map(({ stock, allocation }) => {
+                  const amount = investmentAmount ? parseFloat(investmentAmount) : 0
+                  const allocatedAmount = (amount * allocation) / 100
+                  const shares = amount > 0 ? Math.floor(allocatedAmount / stock.price) : 0
+                  
+                  return (
+                    <tr key={stock.ticker} className="border-b border-border">
+                      <td className="py-3 px-4 font-medium">{stock.ticker}</td>
+                      <td className="py-3 px-4 text-sm text-gray-400">{stock.name}</td>
+                      <td className="py-3 px-4 text-right">{formatCurrency(stock.price)}</td>
+                      <td className="py-3 px-4">
+                        <input
+                          type="number"
+                          value={allocation}
+                          onChange={(e) => updateAllocation(stock.ticker, parseFloat(e.target.value) || 0)}
+                          min="0"
+                          max="100"
+                          step="5"
+                          className="w-20 bg-background border border-border rounded px-2 py-1 text-right"
+                        />
+                      </td>
+                      {investmentAmount && (
+                        <td className="py-3 px-4 text-right text-sm text-gray-300">
+                          {formatCurrency(allocatedAmount)}
+                        </td>
+                      )}
+                      {investmentAmount && (
+                        <td className="py-3 px-4 text-right text-sm text-gray-300">
+                          {shares}
+                        </td>
+                      )}
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => removeFromPortfolio(stock.ticker)}
+                          className="text-red-500 hover:text-red-400"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -369,7 +414,7 @@ export default function PortfolioBuilder() {
           <div className="flex gap-3">
             <Button
               onClick={handleCreatePortfolio}
-              disabled={totalAllocation !== 100 || !portfolioName || !horizon || !risk}
+              disabled={totalAllocation !== 100 || !portfolioName || !horizon || !risk || !investmentAmount}
             >
               Crear Portfolio
             </Button>
