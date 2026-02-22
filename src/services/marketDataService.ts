@@ -3,7 +3,6 @@ import { StockData, HistoricalData, FundamentalData } from '@/types'
 import { getCache, setCache } from '@/utils/cache'
 import { env } from '@/config/env'
 
-const ALPHA_VANTAGE_BASE = 'https://www.alphavantage.co/query'
 const FMP_BASE = 'https://financialmodelingprep.com/api/v3'
 
 // Mock stock data for popular stocks (CORS prevents direct API calls from browser)
