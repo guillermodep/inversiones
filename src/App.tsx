@@ -14,7 +14,7 @@ function App() {
     <Router>
       <Layout>
         <Routes>
-          <Route path="/" element={<Navigate to="/market" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/market" element={<MarketAnalysis />} />
           <Route path="/stock/:ticker" element={<StockDetail />} />
