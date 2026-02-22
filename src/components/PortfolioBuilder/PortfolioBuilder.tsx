@@ -25,42 +25,128 @@ export default function PortfolioBuilder() {
   const { addPortfolio } = useStore()
   const [horizon, setHorizon] = useState('')
   const [risk, setRisk] = useState('')
-  const [selectedIndustry, setSelectedIndustry] = useState('')
-  const [availableStocks, setAvailableStocks] = useState<StockData[]>([])
+  const [recommendations, setRecommendations] = useState<Array<{ stock: StockData; allocation: number; reason: string }>>([])
   const [selectedStocks, setSelectedStocks] = useState<Array<{ stock: StockData; allocation: number }>>([])
   const [loading, setLoading] = useState(false)
   const [portfolioName, setPortfolioName] = useState('')
 
   useEffect(() => {
-    if (selectedIndustry) {
-      loadIndustryStocks()
+    if (horizon && risk) {
+      generateRecommendations()
     }
-  }, [selectedIndustry])
+  }, [horizon, risk])
 
-  async function loadIndustryStocks() {
-    const industry = industries.find(ind => ind.value === selectedIndustry)
-    if (!industry || industry.tickers.length === 0) return
-
+  async function generateRecommendations() {
     setLoading(true)
-    const stocks: StockData[] = []
+    const recs: Array<{ stock: StockData; allocation: number; reason: string }> = []
     
-    for (const ticker of industry.tickers.slice(0, 8)) {
-      const stock = await getStockQuote(ticker)
-      if (stock) stocks.push(stock)
+    // Definir estrategia según horizonte y riesgo
+    let strategy: Array<{ ticker: string; allocation: number; reason: string }> = []
+    
+    if (horizon === '1-6 meses') {
+      // Corto plazo
+      if (risk === 'Conservador') {
+        strategy = [
+          { ticker: 'SHY', allocation: 40, reason: 'Bonos del Tesoro a corto plazo - Máxima seguridad y liquidez' },
+          { ticker: 'AGG', allocation: 30, reason: 'ETF de bonos agregados - Diversificación en renta fija' },
+          { ticker: 'GLD', allocation: 20, reason: 'Oro - Protección contra volatilidad' },
+          { ticker: 'AAPL', allocation: 10, reason: 'Apple - Blue chip estable con dividendos' },
+        ]
+      } else if (risk === 'Moderado') {
+        strategy = [
+          { ticker: 'SPY', allocation: 30, reason: 'S&P 500 - Diversificación en mercado general' },
+          { ticker: 'QQQ', allocation: 25, reason: 'Nasdaq 100 - Exposición a tech de calidad' },
+          { ticker: 'IEF', allocation: 25, reason: 'Bonos 7-10 años - Balance riesgo/retorno' },
+          { ticker: 'MSFT', allocation: 20, reason: 'Microsoft - Líder tech con crecimiento estable' },
+        ]
+      } else {
+        strategy = [
+          { ticker: 'TSLA', allocation: 25, reason: 'Tesla - Alto potencial de crecimiento' },
+          { ticker: 'NVDA', allocation: 25, reason: 'Nvidia - Líder en IA y semiconductores' },
+          { ticker: 'QQQ', allocation: 30, reason: 'Nasdaq 100 - Exposición a tech growth' },
+          { ticker: 'AMD', allocation: 20, reason: 'AMD - Crecimiento en chips y data centers' },
+        ]
+      }
+    } else if (horizon === '1-3 años') {
+      // Mediano plazo
+      if (risk === 'Conservador') {
+        strategy = [
+          { ticker: 'VOO', allocation: 30, reason: 'Vanguard S&P 500 - Diversificación de bajo costo' },
+          { ticker: 'IEF', allocation: 25, reason: 'Bonos 7-10 años - Estabilidad de mediano plazo' },
+          { ticker: 'JNJ', allocation: 20, reason: 'Johnson & Johnson - Dividendos consistentes' },
+          { ticker: 'PG', allocation: 15, reason: 'Procter & Gamble - Consumo defensivo' },
+          { ticker: 'VNQ', allocation: 10, reason: 'Real Estate - Diversificación en bienes raíces' },
+        ]
+      } else if (risk === 'Moderado') {
+        strategy = [
+          { ticker: 'VTI', allocation: 35, reason: 'Total Market - Máxima diversificación' },
+          { ticker: 'MSFT', allocation: 20, reason: 'Microsoft - Crecimiento sostenible en cloud' },
+          { ticker: 'GOOGL', allocation: 15, reason: 'Google - Dominio en búsqueda y cloud' },
+          { ticker: 'JPM', allocation: 15, reason: 'JP Morgan - Líder financiero sólido' },
+          { ticker: 'IEF', allocation: 15, reason: 'Bonos - Balance de cartera' },
+        ]
+      } else {
+        strategy = [
+          { ticker: 'NVDA', allocation: 25, reason: 'Nvidia - Revolución de IA' },
+          { ticker: 'TSLA', allocation: 20, reason: 'Tesla - Transformación energética' },
+          { ticker: 'META', allocation: 20, reason: 'Meta - Líder en redes sociales y metaverso' },
+          { ticker: 'AMD', allocation: 20, reason: 'AMD - Competidor fuerte en semiconductores' },
+          { ticker: 'GOOGL', allocation: 15, reason: 'Google - Innovación en IA' },
+        ]
+      }
+    } else {
+      // Largo plazo (5+ años)
+      if (risk === 'Conservador') {
+        strategy = [
+          { ticker: 'VTI', allocation: 40, reason: 'Total Market - Crecimiento del mercado a largo plazo' },
+          { ticker: 'BND', allocation: 25, reason: 'Bonos totales - Estabilidad y dividendos' },
+          { ticker: 'JNJ', allocation: 15, reason: 'Johnson & Johnson - Aristocrat de dividendos' },
+          { ticker: 'KO', allocation: 10, reason: 'Coca-Cola - Marca global resiliente' },
+          { ticker: 'VNQ', allocation: 10, reason: 'Real Estate - Apreciación a largo plazo' },
+        ]
+      } else if (risk === 'Moderado') {
+        strategy = [
+          { ticker: 'VOO', allocation: 30, reason: 'S&P 500 - Crecimiento histórico comprobado' },
+          { ticker: 'QQQ', allocation: 25, reason: 'Nasdaq - Innovación tecnológica' },
+          { ticker: 'MSFT', allocation: 20, reason: 'Microsoft - Líder en transformación digital' },
+          { ticker: 'AAPL', allocation: 15, reason: 'Apple - Ecosistema y lealtad de marca' },
+          { ticker: 'VEA', allocation: 10, reason: 'Mercados desarrollados - Diversificación global' },
+        ]
+      } else {
+        strategy = [
+          { ticker: 'QQQ', allocation: 30, reason: 'Nasdaq - Máximo potencial de crecimiento tech' },
+          { ticker: 'NVDA', allocation: 25, reason: 'Nvidia - Futuro de IA y computación' },
+          { ticker: 'TSLA', allocation: 20, reason: 'Tesla - Energía limpia y autonomía' },
+          { ticker: 'GOOGL', allocation: 15, reason: 'Google - Dominio en datos e IA' },
+          { ticker: 'AMD', allocation: 10, reason: 'AMD - Crecimiento en gaming y data centers' },
+        ]
+      }
+    }
+    
+    // Cargar datos reales de las acciones recomendadas
+    for (const item of strategy) {
+      const stock = await getStockQuote(item.ticker)
+      if (stock) {
+        recs.push({
+          stock,
+          allocation: item.allocation,
+          reason: item.reason
+        })
+      }
       await new Promise(resolve => setTimeout(resolve, 200))
     }
     
-    setAvailableStocks(stocks)
+    setRecommendations(recs)
     setLoading(false)
   }
 
-  function addToPortfolio(stock: StockData) {
-    if (selectedStocks.find(s => s.stock.ticker === stock.ticker)) return
-    
-    const remainingAllocation = 100 - selectedStocks.reduce((sum, s) => sum + s.allocation, 0)
-    const suggestedAllocation = Math.min(remainingAllocation, 20)
-    
-    setSelectedStocks([...selectedStocks, { stock, allocation: suggestedAllocation }])
+  function acceptAllRecommendations() {
+    setSelectedStocks(recommendations.map(r => ({ stock: r.stock, allocation: r.allocation })))
+  }
+  
+  function acceptRecommendation(rec: { stock: StockData; allocation: number; reason: string }) {
+    if (selectedStocks.find(s => s.stock.ticker === rec.stock.ticker)) return
+    setSelectedStocks([...selectedStocks, { stock: rec.stock, allocation: rec.allocation }])
   }
 
   function removeFromPortfolio(ticker: string) {
@@ -165,70 +251,70 @@ export default function PortfolioBuilder() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">Industria</label>
-              <div className="flex flex-wrap gap-2">
-                {industries.map((industry) => {
-                  const Icon = industry.icon
-                  return (
-                    <button
-                      key={industry.value}
-                      onClick={() => setSelectedIndustry(industry.value)}
-                      className={`px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center gap-1.5 ${
-                        selectedIndustry === industry.value
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {Icon && <Icon size={14} />}
-                      {industry.label}
-                    </button>
-                  )
-                })}
+            {horizon && risk && (
+              <div className="p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                <p className="text-sm font-medium text-blue-400">Estrategia Seleccionada</p>
+                <p className="text-sm text-gray-300 mt-1">
+                  {horizon} • {risk}
+                </p>
               </div>
-            </div>
+            )}
           </div>
         </Card>
 
-        {/* Instrumentos Disponibles */}
+        {/* Recomendaciones */}
         <Card className="lg:col-span-2">
-          <h2 className="text-xl font-bold mb-4">
-            Instrumentos Disponibles
-            {selectedIndustry && ` - ${industries.find(i => i.value === selectedIndustry)?.label}`}
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold">Recomendaciones Personalizadas</h2>
+            {recommendations.length > 0 && (
+              <Button size="sm" onClick={acceptAllRecommendations}>
+                Aceptar Todas
+              </Button>
+            )}
+          </div>
           
-          {!selectedIndustry ? (
-            <p className="text-gray-400 text-center py-8">Selecciona una industria para ver instrumentos disponibles</p>
+          {!horizon || !risk ? (
+            <p className="text-gray-400 text-center py-8">Selecciona horizonte temporal y tolerancia al riesgo para ver recomendaciones</p>
           ) : loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           ) : (
-            <div className="space-y-2">
-              {availableStocks.map((stock) => (
+            <div className="space-y-3">
+              {recommendations.map((rec) => (
                 <div
-                  key={stock.ticker}
-                  className="flex items-center justify-between p-3 bg-background rounded-lg hover:bg-gray-800 transition-colors"
+                  key={rec.stock.ticker}
+                  className="p-4 bg-background rounded-lg border border-border hover:border-blue-500/50 transition-colors"
                 >
-                  <div className="flex-1">
-                    <p className="font-medium">{stock.ticker}</p>
-                    <p className="text-sm text-gray-400">{stock.name}</p>
-                  </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-bold text-lg">{rec.stock.ticker}</p>
+                        <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded">
+                          {rec.allocation}%
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-400">{rec.stock.name}</p>
+                    </div>
                     <div className="text-right">
-                      <p className="font-medium">{formatCurrency(stock.price)}</p>
-                      <p className={`text-sm ${stock.changePercent >= 0 ? 'text-profit' : 'text-loss'}`}>
-                        {formatPercent(stock.changePercent)}
+                      <p className="font-medium">{formatCurrency(rec.stock.price)}</p>
+                      <p className={`text-sm ${rec.stock.changePercent >= 0 ? 'text-profit' : 'text-loss'}`}>
+                        {formatPercent(rec.stock.changePercent)}
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => addToPortfolio(stock)}
-                      disabled={selectedStocks.find(s => s.stock.ticker === stock.ticker) !== undefined}
-                    >
-                      <Plus size={16} />
-                    </Button>
                   </div>
+                  <div className="flex items-start gap-2 mb-3">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-300 italic">💡 {rec.reason}</p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => acceptRecommendation(rec)}
+                    disabled={selectedStocks.find(s => s.stock.ticker === rec.stock.ticker) !== undefined}
+                  >
+                    {selectedStocks.find(s => s.stock.ticker === rec.stock.ticker) ? 'Agregado' : 'Agregar al Portfolio'}
+                  </Button>
                 </div>
               ))}
             </div>
