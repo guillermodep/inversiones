@@ -4,22 +4,8 @@ import { getStockQuote } from '@/services/marketDataService'
 import { StockData } from '@/types'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import { Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home, Plus, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
-
-const industries: Array<{ label: string; value: string; tickers: string[]; icon: any }> = [
-  { label: 'Tech', value: 'TECH', tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'NFLX'], icon: Cpu },
-  { label: 'Healthcare', value: 'HEALTHCARE', tickers: ['JNJ', 'UNH', 'PFE', 'ABBV', 'TMO', 'ABT', 'MRK', 'LLY'], icon: Heart },
-  { label: 'Pharma', value: 'PHARMA', tickers: ['PFE', 'ABBV', 'MRK', 'LLY', 'BMY', 'GILD', 'AMGN', 'REGN'], icon: Pill },
-  { label: 'Energy', value: 'ENERGY', tickers: ['XOM', 'CVX', 'COP', 'SLB', 'EOG', 'MPC', 'PSX', 'VLO'], icon: Zap },
-  { label: 'Banks', value: 'BANKS', tickers: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'USB', 'PNC'], icon: Building2 },
-  { label: 'Retail', value: 'RETAIL', tickers: ['WMT', 'AMZN', 'HD', 'TGT', 'COST', 'LOW', 'TJX', 'DG'], icon: ShoppingCart },
-  { label: 'Auto', value: 'AUTO', tickers: ['TSLA', 'F', 'GM', 'RIVN', 'LCID', 'NIO', 'LI', 'XPEV', 'VWAGY', 'TM', 'HMC', 'STLA'], icon: Car },
-  { label: 'Bonos Tesoro', value: 'TREASURY', tickers: ['TLT', 'IEF', 'SHY', 'TIP', 'GOVT', 'VGSH', 'VGIT', 'VGLT'], icon: DollarSign },
-  { label: 'Consumo', value: 'CONSUMER', tickers: ['PG', 'KO', 'PEP', 'MDLZ', 'CL', 'KMB', 'GIS', 'K'], icon: ShoppingBag },
-  { label: 'Bienes Raíces', value: 'REALESTATE', tickers: ['AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'SPG', 'O', 'WELL'], icon: Home },
-  { label: 'ETFs', value: 'ETFS', tickers: ['SPY', 'QQQ', 'IWM', 'VTI', 'VOO', 'DIA', 'EEM', 'GLD'], icon: null },
-]
 
 export default function PortfolioBuilder() {
   const { addPortfolio } = useStore()
@@ -194,7 +180,7 @@ export default function PortfolioBuilder() {
     setPortfolioName('')
     setHorizon('')
     setRisk('')
-    setSelectedIndustry('')
+    setRecommendations([])
   }
 
   const totalAllocation = selectedStocks.reduce((sum, s) => sum + s.allocation, 0)
