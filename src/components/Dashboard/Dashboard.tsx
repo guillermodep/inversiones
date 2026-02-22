@@ -57,48 +57,52 @@ export default function Dashboard() {
 
   async function loadDashboardData() {
     setLoading(true)
-    try {
-      // Try to load from cache first
-      const cachedIndices = getCache<StockData[]>('dashboard_indices')
-      const cachedNews = getCache<NewsItem[]>('dashboard_news')
-      const cachedTopMovers = getCache<{ gainers: TopMover[], losers: TopMover[] }>('dashboard_top_movers')
-      const cachedHeatmap = getCache<Array<TopMover & { category: 'stock' | 'etf' | 'bond' }>>('dashboard_heatmap')
-      
-      // If we have cached data, use it immediately
-      if (cachedIndices && cachedNews && cachedTopMovers && cachedHeatmap) {
-        setIndices(cachedIndices)
-        setNews(cachedNews)
-        setTopGainers(cachedTopMovers.gainers)
-        setTopLosers(cachedTopMovers.losers)
-        setHeatmapData(cachedHeatmap)
-        setLoading(false)
-        
-        // Still calculate portfolio metrics (they depend on current prices)
-        await calculatePortfolioMetrics()
-        return
-      }
-      
-      // If no cache, fetch fresh data
-      const [indicesData, newsData] = await Promise.all([
-        getMarketIndices(),
-        getMarketNews(),
-      ])
-      
-      setIndices(indicesData)
-      setNews(newsData)
-      
-      // Cache the data
-      setCache('dashboard_indices', indicesData)
-      setCache('dashboard_news', newsData)
-      
-      await calculatePortfolioMetrics()
-      await loadTopMovers()
-      await loadHeatmapData()
-    } catch (error) {
-      console.error('Error loading dashboard:', error)
-    } finally {
-      setLoading(false)
+    
+    // Try to load from cache first
+    const cachedIndices = getCache<StockData[]>('dashboard_indices')
+    const cachedNews = getCache<NewsItem[]>('dashboard_news')
+    const cachedTopMovers = getCache<{ gainers: TopMover[], losers: TopMover[] }>('dashboard_top_movers')
+    const cachedHeatmap = getCache<Array<TopMover & { category: 'stock' | 'etf' | 'bond' }>>('dashboard_heatmap')
+    
+    // Load cached data immediately if available
+    if (cachedIndices) {
+      setIndices(cachedIndices)
+      setLoadingIndices(false)
     }
+    if (cachedNews) {
+      setNews(cachedNews)
+      setLoadingNews(false)
+    }
+    if (cachedTopMovers) {
+      setTopGainers(cachedTopMovers.gainers)
+      setTopLosers(cachedTopMovers.losers)
+      setLoadingTopMovers(false)
+    }
+    if (cachedHeatmap) {
+      setHeatmapData(cachedHeatmap)
+      setLoadingHeatmap(false)
+    }
+    
+    // Load all data in parallel, update as each completes
+    Promise.all([
+      getMarketIndices().then(data => {
+        setIndices(data)
+        setCache('dashboard_indices', data)
+        setLoadingIndices(false)
+      }).catch(() => setLoadingIndices(false)),
+      
+      getMarketNews().then(data => {
+        setNews(data)
+        setCache('dashboard_news', data)
+        setLoadingNews(false)
+      }).catch(() => setLoadingNews(false)),
+      
+      calculatePortfolioMetrics(),
+      
+      loadTopMovers().then(() => setLoadingTopMovers(false)).catch(() => setLoadingTopMovers(false)),
+      
+      loadHeatmapData().then(() => setLoadingHeatmap(false)).catch(() => setLoadingHeatmap(false))
+    ]).finally(() => setLoading(false))
   }
 
   async function calculatePortfolioMetrics() {
