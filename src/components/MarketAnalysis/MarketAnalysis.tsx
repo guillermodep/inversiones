@@ -45,12 +45,27 @@ export default function MarketAnalysis() {
       industries.flatMap(ind => ind.tickers)
     ))
     
-    const results = await Promise.all(
-      allTickers.map((ticker) => getStockQuote(ticker))
-    )
-    const validStocks = results.filter((r): r is StockData => r !== null)
-    setAllStocks(validStocks)
-    setPopularStocks(validStocks)
+    // Load in batches to avoid rate limiting (429 errors)
+    const batchSize = 5
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+    const validStocks: StockData[] = []
+    
+    for (let i = 0; i < allTickers.length; i += batchSize) {
+      const batch = allTickers.slice(i, i + batchSize)
+      const results = await Promise.all(
+        batch.map((ticker) => getStockQuote(ticker))
+      )
+      validStocks.push(...results.filter((r): r is StockData => r !== null))
+      
+      // Update UI progressively
+      setAllStocks([...validStocks])
+      setPopularStocks([...validStocks])
+      
+      // Wait between batches to avoid rate limiting
+      if (i + batchSize < allTickers.length) {
+        await delay(1000) // 1 second delay between batches
+      }
+    }
   }
 
   function handleIndustryFilter(industry: string) {
@@ -70,18 +85,28 @@ export default function MarketAnalysis() {
 
   async function loadPopularETFs() {
     const tickers = ['SPY', 'QQQ', 'IWM', 'VTI', 'VOO', 'DIA', 'EEM', 'GLD']
-    const results = await Promise.all(
-      tickers.map((ticker) => getStockQuote(ticker))
-    )
-    setPopularETFs(results.filter((r): r is StockData => r !== null))
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+    const validETFs: StockData[] = []
+    
+    for (const ticker of tickers) {
+      const result = await getStockQuote(ticker)
+      if (result) validETFs.push(result)
+      setPopularETFs([...validETFs])
+      await delay(200) // Small delay between requests
+    }
   }
 
   async function loadPopularBonds() {
     const tickers = ['TLT', 'IEF', 'SHY', 'AGG', 'BND', 'LQD', 'HYG', 'MUB']
-    const results = await Promise.all(
-      tickers.map((ticker) => getStockQuote(ticker))
-    )
-    setPopularBonds(results.filter((r): r is StockData => r !== null))
+    const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
+    const validBonds: StockData[] = []
+    
+    for (const ticker of tickers) {
+      const result = await getStockQuote(ticker)
+      if (result) validBonds.push(result)
+      setPopularBonds([...validBonds])
+      await delay(200) // Small delay between requests
+    }
   }
 
   async function handleSearch(e: React.FormEvent) {
