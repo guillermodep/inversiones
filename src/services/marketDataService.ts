@@ -64,6 +64,20 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
       
       console.log(`💰 Price for ${ticker}: ${currentPrice} (change: ${change}, ${changePercent.toFixed(2)}%)`)
 
+      // Log which fields are missing
+      const missingFields = []
+      if (!meta.marketCap) missingFields.push('marketCap')
+      if (!meta.trailingPE) missingFields.push('P/E')
+      if (!meta.averageDailyVolume10Day && !meta.averageDailyVolume3Month) missingFields.push('avgVolume')
+      if (!meta.dividendYield) missingFields.push('dividendYield')
+      if (!meta.beta) missingFields.push('beta')
+      if (!meta.epsTrailingTwelveMonths) missingFields.push('EPS')
+      
+      if (missingFields.length > 0) {
+        console.warn(`⚠️ Missing fields for ${ticker}:`, missingFields)
+        console.log(`📋 Available meta fields:`, Object.keys(meta))
+      }
+
       const data: StockData = {
         ticker: meta.symbol,
         name: meta.longName || meta.shortName || ticker,
@@ -86,6 +100,7 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
       }
 
       console.log(`✅ Netlify Function data for ${ticker}:`, data)
+      console.log(`📊 Data completeness: P/E=${!!data.peRatio}, MktCap=${!!data.marketCap}, AvgVol=${!!data.avgVolume}, Yield=${!!data.dividendYield}, Beta=${!!data.beta}, EPS=${!!data.eps}`)
       setCache(cacheKey, data)
       return data
     }
