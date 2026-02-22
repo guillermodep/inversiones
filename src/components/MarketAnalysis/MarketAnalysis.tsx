@@ -8,7 +8,7 @@ import Loading from '@/components/ui/Loading'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
 import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home } from 'lucide-react'
 
-const industries = [
+const industries: Array<{ label: string; value: string; tickers: string[]; icon: any }> = [
   { label: 'Todas', value: 'ALL', tickers: [], icon: null },
   { label: 'Tech', value: 'TECH', tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'NFLX'], icon: Cpu },
   { label: 'Healthcare', value: 'HEALTHCARE', tickers: ['JNJ', 'UNH', 'PFE', 'ABBV', 'TMO', 'ABT', 'MRK', 'LLY'], icon: Heart },
