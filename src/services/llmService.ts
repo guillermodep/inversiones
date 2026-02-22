@@ -37,12 +37,17 @@ function buildAnalysisPrompt(context: AnalysisContext): string {
 
   const newsHeadlines = news.slice(0, 10).map(n => `- ${n.title} (${n.publishedAt})`).join('\n')
 
-  return `Eres un analista financiero experto. Analiza la acción ${ticker} y proporciona una recomendación de inversión.
+  const price30DaysAgo = recentPrices[recentPrices.length - 30]?.close || currentPrice
+  const price90DaysAgo = recentPrices[0]?.close || currentPrice
+  const change30d = ((currentPrice - price30DaysAgo) / price30DaysAgo) * 100
+  const change90d = ((currentPrice - price90DaysAgo) / price90DaysAgo) * 100
+
+  return `Eres un analista financiero experto y DECISIVO. Analiza la acción ${ticker} y proporciona una recomendación clara de inversión.
 
 DATOS ACTUALES:
 - Precio actual: $${currentPrice}
-- Precio hace 30 días: $${recentPrices[recentPrices.length - 30]?.close || 'N/A'}
-- Precio hace 90 días: $${recentPrices[0]?.close || 'N/A'}
+- Precio hace 30 días: $${price30DaysAgo.toFixed(2)} (cambio: ${change30d.toFixed(2)}%)
+- Precio hace 90 días: $${price90DaysAgo.toFixed(2)} (cambio: ${change90d.toFixed(2)}%)
 
 FUNDAMENTALES:
 ${fundamentals ? `
@@ -55,6 +60,11 @@ ${fundamentals ? `
 
 NOTICIAS RECIENTES:
 ${newsHeadlines || 'No hay noticias disponibles'}
+
+CRITERIOS DE DECISIÓN (úsalos como guía):
+- COMPRAR si: Tendencia alcista fuerte (>10% en 30d), fundamentales sólidos, noticias positivas, momentum positivo
+- VENDER si: Tendencia bajista fuerte (<-10% en 30d), fundamentales débiles, noticias negativas, momentum negativo
+- MANTENER si: Tendencia lateral (-5% a +5% en 30d), fundamentales estables, sin señales claras
 
 INSTRUCCIONES:
 Proporciona tu análisis en formato JSON con la siguiente estructura:
@@ -71,9 +81,11 @@ Proporciona tu análisis en formato JSON con la siguiente estructura:
 
 IMPORTANTE: 
 - Responde SOLO con el JSON, sin texto adicional
-- Esta es una recomendación orientativa, no asesoramiento financiero
-- Considera tendencias técnicas, fundamentales y sentimiento de noticias
-- Sé conservador en tus estimaciones`
+- SÉ DECISIVO: No tengas miedo de recomendar COMPRAR o VENDER cuando los datos lo justifiquen
+- Usa los criterios de decisión como guía, pero aplica tu análisis experto
+- Considera TODOS los factores: tendencia de precio, fundamentales, noticias y momentum
+- Si la tendencia es clara (>10% o <-10%), sé agresivo con tu recomendación
+- Esta es una recomendación orientativa, no asesoramiento financiero`
 }
 
 async function analyzeWithAzureOpenAI(prompt: string): Promise<LLMRecommendation> {
