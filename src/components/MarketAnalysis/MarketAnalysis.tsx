@@ -16,7 +16,7 @@ const industries = [
   { label: 'Energy', value: 'ENERGY', tickers: ['XOM', 'CVX', 'COP', 'SLB', 'EOG', 'MPC', 'PSX', 'VLO'], icon: Zap },
   { label: 'Banks', value: 'BANKS', tickers: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'USB', 'PNC'], icon: Building2 },
   { label: 'Retail', value: 'RETAIL', tickers: ['WMT', 'AMZN', 'HD', 'TGT', 'COST', 'LOW', 'TJX', 'DG'], icon: ShoppingCart },
-  { label: 'Auto', value: 'AUTO', tickers: ['TSLA', 'F', 'GM', 'RIVN', 'LCID', 'NIO', 'LI', 'XPEV'], icon: Car },
+  { label: 'Auto', value: 'AUTO', tickers: ['TSLA', 'F', 'GM', 'RIVN', 'LCID', 'NIO', 'LI', 'XPEV', 'VWAGY', 'TM', 'HMC', 'STLA'], icon: Car },
   { label: 'Bonos Tesoro', value: 'TREASURY', tickers: ['TLT', 'IEF', 'SHY', 'TIP', 'GOVT', 'VGSH', 'VGIT', 'VGLT'], icon: DollarSign },
   { label: 'Consumo', value: 'CONSUMER', tickers: ['PG', 'KO', 'PEP', 'MDLZ', 'CL', 'KMB', 'GIS', 'K'], icon: ShoppingBag },
   { label: 'Bienes Raíces', value: 'REALESTATE', tickers: ['AMT', 'PLD', 'CCI', 'EQIX', 'PSA', 'SPG', 'O', 'WELL'], icon: Home },
