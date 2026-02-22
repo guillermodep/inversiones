@@ -5,8 +5,9 @@ import { calculatePortfolioValue, calculatePositionPnL } from '@/services/portfo
 import { analyzePortfolio } from '@/services/llmService'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import ProgressBar from '@/components/ui/ProgressBar'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
-import { Plus, Trash2, Sparkles } from 'lucide-react'
+import { Plus, Trash2, Sparkles, Edit2, Check, X } from 'lucide-react'
 import { hasLLMConfig } from '@/config/env'
 
 export default function Portfolio() {
@@ -17,6 +18,8 @@ export default function Portfolio() {
   const [portfolioValues, setPortfolioValues] = useState<Record<string, any>>({})
   const [aiAnalysis, setAiAnalysis] = useState<string>('')
   const [analyzing, setAnalyzing] = useState(false)
+  const [analysisProgress, setAnalysisProgress] = useState(0)
+  const [editingShares, setEditingShares] = useState<{positionIndex: number, value: string} | null>(null)
 
   const currentPortfolio = portfolios.find(p => p.id === selectedPortfolio)
 
@@ -31,6 +34,21 @@ export default function Portfolio() {
       values[portfolio.id] = result
     }
     setPortfolioValues(values)
+  }
+
+  function handleUpdateShares(positionIndex: number, newShares: number) {
+    if (!currentPortfolio || newShares < 0) return
+    
+    const updatedPositions = [...currentPortfolio.positions]
+    updatedPositions[positionIndex] = {
+      ...updatedPositions[positionIndex],
+      shares: newShares
+    }
+    
+    const { updatePortfolio } = useStore.getState()
+    updatePortfolio(currentPortfolio.id, { positions: updatedPositions })
+    setEditingShares(null)
+    loadPortfolioValues()
   }
 
   function handleCreatePortfolio() {
@@ -60,6 +78,7 @@ export default function Portfolio() {
     
     setAnalyzing(true)
     setAiAnalysis('') // Clear previous analysis
+    setAnalysisProgress(0)
     
     try {
       const positions = portfolioValues[currentPortfolio.id]?.positions || []
@@ -70,15 +89,32 @@ export default function Portfolio() {
         return
       }
       
+      // Simulate progress
+      const progressInterval = setInterval(() => {
+        setAnalysisProgress(prev => {
+          if (prev >= 90) return prev
+          return prev + 10
+        })
+      }, 300)
+      
       const analysis = await analyzePortfolio(positions)
-      setAiAnalysis(analysis)
+      
+      clearInterval(progressInterval)
+      setAnalysisProgress(100)
+      
+      // Small delay to show 100%
+      setTimeout(() => {
+        setAiAnalysis(analysis)
+        setAnalyzing(false)
+        setAnalysisProgress(0)
+      }, 500)
     } catch (error: any) {
       console.error('Error analyzing portfolio:', error)
       const errorMessage = error?.message || 'Error desconocido'
       alert(`Error al analizar el portfolio: ${errorMessage}\n\nVerifica tu configuración de API en Settings.`)
       setAiAnalysis('')
-    } finally {
       setAnalyzing(false)
+      setAnalysisProgress(0)
     }
   }
 
@@ -181,13 +217,24 @@ export default function Portfolio() {
 
       {currentPortfolio && (
         <Card>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">{currentPortfolio.name}</h2>
-            <Button onClick={handleAnalyzePortfolio} disabled={analyzing || !hasLLMConfig()}>
-              <Sparkles size={18} className="mr-2" />
-              {analyzing ? 'Analizando...' : 'Analizar con IA'}
-            </Button>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">{currentPortfolio.name}</h2>
+              <Button onClick={handleAnalyzePortfolio} disabled={analyzing || !hasLLMConfig()}>
+                <Sparkles size={18} className="mr-2" />
+                {analyzing ? 'Analizando...' : 'Analizar con IA'}
+              </Button>
+            </div>
+            
+            {analyzing && (
+              <ProgressBar 
+                progress={analysisProgress} 
+                message="Analizando portfolio con IA..."
+              />
+            )}
           </div>
+          
+          <div className="mt-4" />
 
           {currentPortfolio.positions.length === 0 ? (
             <p className="text-gray-400">No hay posiciones en este portfolio.</p>
@@ -202,6 +249,7 @@ export default function Portfolio() {
                     <th className="py-2 px-4 text-right">Precio Actual</th>
                     <th className="py-2 px-4 text-right">Variación</th>
                     <th className="py-2 px-4 text-right">P&L</th>
+                    <th className="py-2 px-4">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -210,10 +258,46 @@ export default function Portfolio() {
                     const priceChange = position.currentPrice && position.purchasePrice 
                       ? ((position.currentPrice - position.purchasePrice) / position.purchasePrice) * 100
                       : 0
+                    const isEditing = editingShares?.positionIndex === idx
+                    
                     return (
                       <tr key={idx} className="border-b border-border">
                         <td className="py-3 px-4 font-medium">{position.ticker}</td>
-                        <td className="py-3 px-4 text-right">{position.shares}</td>
+                        <td className="py-3 px-4 text-right">
+                          {isEditing ? (
+                            <div className="flex items-center justify-end gap-2">
+                              <input
+                                type="number"
+                                value={editingShares.value}
+                                onChange={(e) => setEditingShares({ positionIndex: idx, value: e.target.value })}
+                                className="w-20 bg-background border border-border rounded px-2 py-1 text-right"
+                                autoFocus
+                              />
+                              <button
+                                onClick={() => handleUpdateShares(idx, parseFloat(editingShares.value) || 0)}
+                                className="text-green-500 hover:text-green-400"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => setEditingShares(null)}
+                                className="text-red-500 hover:text-red-400"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-end gap-2">
+                              <span>{position.shares}</span>
+                              <button
+                                onClick={() => setEditingShares({ positionIndex: idx, value: position.shares.toString() })}
+                                className="text-gray-400 hover:text-gray-200"
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </td>
                         <td className="py-3 px-4 text-right">{formatCurrency(position.purchasePrice)}</td>
                         <td className="py-3 px-4 text-right">
                           <div>{formatCurrency(position.currentPrice || 0)}</div>
@@ -224,6 +308,7 @@ export default function Portfolio() {
                         <td className={`py-3 px-4 text-right ${pnl.pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
                           {formatCurrency(pnl.pnl)} ({formatPercent(pnl.pnlPercent)})
                         </td>
+                        <td className="py-3 px-4 text-right">{position.shares}</td>
                       </tr>
                     )
                   })}

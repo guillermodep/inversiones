@@ -115,4 +115,18 @@
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
+
+  /* Shimmer animation for progress bar */
+  @keyframes shimmer-progress {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer-progress 2s infinite;
+  }
 }
