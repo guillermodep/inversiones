@@ -2,25 +2,17 @@ import { ButtonHTMLAttributes } from 'react'
 import { cn } from '@/utils/cn'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'gradient'
   size?: 'sm' | 'md' | 'lg'
 }
 
 export default function Button({
   children,
-  variant = 'primary',
+  variant = 'gradient',
   size = 'md',
   className,
   ...props
 }: ButtonProps) {
-  const variants = {
-    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-    secondary: 'bg-card hover:bg-gray-700 text-gray-100 border border-border',
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    ghost: 'hover:bg-gray-800 text-gray-300',
-    gradient: 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-purple-600 text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/50',
-  }
-
   const sizes = {
     sm: 'px-3 py-1.5 text-sm',
     md: 'px-4 py-2 text-base',
@@ -31,8 +23,11 @@ export default function Button({
     return (
       <button
         className={cn(
-          'px-4 py-2 rounded-lg font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed',
+          'rounded-lg font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed',
+          'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-purple-600',
+          'text-white shadow-lg hover:shadow-xl hover:shadow-blue-500/50',
           'relative overflow-hidden group',
+          sizes[size],
           className
         )}
         {...props}
@@ -43,11 +38,18 @@ export default function Button({
     )
   }
 
+  const variants = {
+    primary: 'bg-blue-600 hover:bg-blue-700 text-white',
+    secondary: 'bg-card hover:bg-gray-700 text-gray-100 border border-border',
+    danger: 'bg-red-600 hover:bg-red-700 text-white',
+    ghost: 'hover:bg-gray-800 text-gray-300',
+  }
+
   return (
     <button
       className={cn(
         'rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
-        variants[variant],
+        variants[variant as keyof typeof variants],
         sizes[size],
         className
       )}
