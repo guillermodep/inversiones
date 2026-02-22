@@ -364,6 +364,15 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Market Heatmap */}
+      {heatmapData.length > 0 && (
+        <Card>
+          <h2 className="text-2xl font-bold mb-4 text-gradient">Market Overview</h2>
+          <p className="text-sm text-gray-400 mb-4">Vista en tiempo real del mercado - Acciones, ETFs y Bonos</p>
+          <MarketHeatmap items={heatmapData} />
+        </Card>
+      )}
+
       {/* Top Gainers & Losers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
