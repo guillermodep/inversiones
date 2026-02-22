@@ -4,7 +4,7 @@ import { getMarketIndices, getStockQuote } from '@/services/marketDataService'
 import { getMarketNews } from '@/services/newsService'
 import { StockData, NewsItem } from '@/types'
 import Card from '@/components/ui/Card'
-import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
+import { SkeletonCard } from '@/components/ui/Skeleton'
 import FadeIn from '@/components/ui/FadeIn'
 import CountUp from '@/components/ui/CountUp'
 import MarketHeatmap from '@/components/ui/MarketHeatmap'
@@ -35,7 +35,6 @@ export default function Dashboard() {
   const { portfolios } = useStore()
   const [indices, setIndices] = useState<StockData[]>([])
   const [news, setNews] = useState<NewsItem[]>([])
-  const [loading, setLoading] = useState(true)
   const [metrics, setMetrics] = useState<PortfolioMetrics>({
     totalValue: 0,
     totalCost: 0,
@@ -57,8 +56,6 @@ export default function Dashboard() {
   }, [])
 
   async function loadDashboardData() {
-    setLoading(true)
-    
     // Try to load from cache first
     const cachedIndices = getCache<StockData[]>('dashboard_indices')
     const cachedNews = getCache<NewsItem[]>('dashboard_news')
@@ -103,7 +100,7 @@ export default function Dashboard() {
       loadTopMovers().then(() => setLoadingTopMovers(false)).catch(() => setLoadingTopMovers(false)),
       
       loadHeatmapData().then(() => setLoadingHeatmap(false)).catch(() => setLoadingHeatmap(false))
-    ]).finally(() => setLoading(false))
+    ])
   }
 
   async function calculatePortfolioMetrics() {
