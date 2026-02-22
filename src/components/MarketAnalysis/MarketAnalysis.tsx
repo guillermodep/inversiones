@@ -129,7 +129,7 @@ export default function MarketAnalysis() {
             <table className="w-full">
               <thead>
                 <tr className="text-left text-sm text-gray-400 border-b border-border">
-                  <th className="py-2 px-4">Acción</th>
+                  <th className="py-2 px-4">Instrumento</th>
                   <th className="py-2 px-4 text-right">Precio</th>
                   <th className="py-2 px-4 text-right">Cambio</th>
                   <th className="py-2 px-4 text-right">Volumen</th>
