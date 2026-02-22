@@ -48,15 +48,35 @@ export default function Portfolio() {
   }
 
   async function handleAnalyzePortfolio() {
-    if (!currentPortfolio || !hasLLMConfig()) return
+    if (!currentPortfolio || !hasLLMConfig()) {
+      alert('Configura tu API key de LLM en Configuración para usar esta función')
+      return
+    }
+    
+    if (currentPortfolio.positions.length === 0) {
+      alert('Este portfolio no tiene posiciones para analizar')
+      return
+    }
+    
     setAnalyzing(true)
+    setAiAnalysis('') // Clear previous analysis
+    
     try {
       const positions = portfolioValues[currentPortfolio.id]?.positions || []
+      
+      if (positions.length === 0) {
+        alert('No hay datos de precios disponibles para analizar')
+        setAnalyzing(false)
+        return
+      }
+      
       const analysis = await analyzePortfolio(positions)
       setAiAnalysis(analysis)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error analyzing portfolio:', error)
-      alert('Error al analizar. Verifica tu API key.')
+      const errorMessage = error?.message || 'Error desconocido'
+      alert(`Error al analizar el portfolio: ${errorMessage}\n\nVerifica tu configuración de API en Settings.`)
+      setAiAnalysis('')
     } finally {
       setAnalyzing(false)
     }
@@ -180,18 +200,27 @@ export default function Portfolio() {
                     <th className="py-2 px-4 text-right">Acciones</th>
                     <th className="py-2 px-4 text-right">Precio Compra</th>
                     <th className="py-2 px-4 text-right">Precio Actual</th>
+                    <th className="py-2 px-4 text-right">Variación</th>
                     <th className="py-2 px-4 text-right">P&L</th>
                   </tr>
                 </thead>
                 <tbody>
                   {portfolioValues[currentPortfolio.id]?.positions.map((position: PortfolioPosition, idx: number) => {
                     const pnl = calculatePositionPnL(position)
+                    const priceChange = position.currentPrice && position.purchasePrice 
+                      ? ((position.currentPrice - position.purchasePrice) / position.purchasePrice) * 100
+                      : 0
                     return (
                       <tr key={idx} className="border-b border-border">
                         <td className="py-3 px-4 font-medium">{position.ticker}</td>
                         <td className="py-3 px-4 text-right">{position.shares}</td>
                         <td className="py-3 px-4 text-right">{formatCurrency(position.purchasePrice)}</td>
-                        <td className="py-3 px-4 text-right">{formatCurrency(position.currentPrice || 0)}</td>
+                        <td className="py-3 px-4 text-right">
+                          <div>{formatCurrency(position.currentPrice || 0)}</div>
+                        </td>
+                        <td className={`py-3 px-4 text-right font-medium ${priceChange >= 0 ? 'text-profit' : 'text-loss'}`}>
+                          {priceChange >= 0 ? '+' : ''}{formatPercent(priceChange)}
+                        </td>
                         <td className={`py-3 px-4 text-right ${pnl.pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
                           {formatCurrency(pnl.pnl)} ({formatPercent(pnl.pnlPercent)})
                         </td>
