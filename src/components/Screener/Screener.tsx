@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getStockQuote } from '@/services/marketDataService'
 import { StockData } from '@/types'
+import { useStore } from '@/store/useStore'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
@@ -145,6 +146,7 @@ const strategies = [
 
 export default function Screener() {
   const navigate = useNavigate()
+  const { addPortfolio } = useStore()
   const [selectedStrategy, setSelectedStrategy] = useState('')
   const [results, setResults] = useState<StockData[]>([])
   const [loading, setLoading] = useState(false)
@@ -176,6 +178,39 @@ export default function Screener() {
 
     setResults(stocks)
     setLoading(false)
+  }
+
+  function createPortfolioFromStrategy() {
+    if (results.length === 0) return
+
+    const strategy = strategies.find(s => s.id === selectedStrategy)
+    if (!strategy) return
+
+    // Distribute allocation equally among results
+    const allocationPerStock = Math.floor(100 / results.length)
+    const remainder = 100 - (allocationPerStock * results.length)
+
+    const positions = results.map((stock, index) => {
+      const allocation = index === 0 ? allocationPerStock + remainder : allocationPerStock
+      return {
+        ticker: stock.ticker,
+        shares: 0, // User will need to set investment amount later
+        purchasePrice: stock.price,
+        purchaseDate: new Date().toISOString().split('T')[0],
+      }
+    })
+
+    const newPortfolio = {
+      id: Date.now().toString(),
+      name: `${strategy.name} - ${new Date().toLocaleDateString()}`,
+      type: 'long-term' as const,
+      positions,
+      createdAt: new Date().toISOString(),
+    }
+
+    addPortfolio(newPortfolio)
+    alert(`Portfolio "${newPortfolio.name}" creado con ${results.length} instrumentos`)
+    navigate('/portfolios')
   }
 
   return (
@@ -220,9 +255,9 @@ export default function Screener() {
                 <>
                   <p className="text-sm text-gray-400">{results.length} instrumentos encontrados</p>
                   <Button
-                    onClick={() => navigate('/portfolio-builder', { state: { strategyResults: results } })}
+                    onClick={createPortfolioFromStrategy}
                   >
-                    Construir Portfolio
+                    Crear Portfolio con esta Estrategia
                   </Button>
                 </>
               )}
