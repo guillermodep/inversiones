@@ -6,7 +6,6 @@ import { useStore } from '@/store/useStore'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { SkeletonTable } from '@/components/ui/Skeleton'
-import FadeIn from '@/components/ui/FadeIn'
 import { TrendingUp, DollarSign, Zap, Award, Building, Sparkles, TrendingDown, Newspaper, Shield, Target } from 'lucide-react'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
