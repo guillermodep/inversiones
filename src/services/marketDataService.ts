@@ -40,9 +40,8 @@ function generateMockQuote(ticker: string): StockData {
 
 export async function getStockQuote(ticker: string): Promise<StockData | null> {
   const cacheKey = `cache_quote_${ticker}`
-  // Temporarily disable cache for debugging
-  // const cached = getCache<StockData>(cacheKey)
-  // if (cached) return cached
+  const cached = getCache<StockData>(cacheKey)
+  if (cached) return cached
 
   try {
     // Use proxy to get real data from Yahoo Finance
@@ -51,18 +50,10 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
         interval: '1d',
         range: '1d',
       },
+      timeout: 5000, // 5 second timeout
     })
 
     const result = response.data?.chart?.result?.[0]
-    
-    // Debug logging
-    console.log(`📊 Yahoo Finance data for ${ticker}:`, {
-      hasResult: !!result,
-      hasMeta: !!result?.meta,
-      hasQuote: !!result?.indicators?.quote?.[0],
-      meta: result?.meta,
-      quote: result?.indicators?.quote?.[0]
-    })
     
     if (!result) {
       console.warn(`⚠️ No result from Yahoo Finance for ${ticker}, using mock data`)
@@ -116,9 +107,9 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
 
     setCache(cacheKey, data)
     return data
-  } catch (error) {
-    console.error(`Error fetching quote for ${ticker}:`, error)
-    // Fallback to mock data on error
+  } catch (error: any) {
+    // Silently fallback to mock data on any error (network, timeout, 500, etc.)
+    console.warn(`⚠️ Yahoo Finance unavailable for ${ticker} (${error.message}), using mock data`)
     const data = generateMockQuote(ticker)
     setCache(cacheKey, data)
     return data
@@ -254,6 +245,7 @@ export async function getHistoricalData(
         period2: now,
         interval,
       },
+      timeout: 10000, // 10 second timeout
     })
 
     const result = response.data?.chart?.result?.[0]
