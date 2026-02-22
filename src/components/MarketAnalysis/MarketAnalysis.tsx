@@ -9,6 +9,7 @@ import Pagination from '@/components/ui/Pagination'
 import Sparkline from '@/components/ui/Sparkline'
 import ProgressBar from '@/components/ui/ProgressBar'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
+import { getCache, setCache } from '@/utils/cache'
 import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const industries: Array<{ label: string; value: string; tickers: string[]; icon: any }> = [
@@ -50,6 +51,15 @@ export default function MarketAnalysis() {
   }, [])
 
   async function loadPopularStocks() {
+    // Check cache first (10 minutes)
+    const cached = getCache<StockData[]>('market_popular_stocks', 10)
+    if (cached && cached.length > 0) {
+      setAllStocks(cached)
+      setPopularStocks(cached)
+      console.log('✅ Loaded popular stocks from cache')
+      return
+    }
+    
     // Combinar todos los tickers de todas las industrias
     const allTickers = Array.from(new Set(
       industries.flatMap(ind => ind.tickers)
@@ -97,6 +107,9 @@ export default function MarketAnalysis() {
         await delay(200) // 1 second delay between batches
       }
     }
+    
+    // Cache the results
+    setCache('market_popular_stocks', validStocks)
     
     // Reset progress when done
     setLoadingProgress(100)
@@ -172,6 +185,14 @@ export default function MarketAnalysis() {
   }
 
   async function loadPopularETFs() {
+    // Check cache first (10 minutes)
+    const cached = getCache<StockData[]>('market_popular_etfs', 10)
+    if (cached && cached.length > 0) {
+      setPopularETFs(cached)
+      console.log('✅ Loaded popular ETFs from cache')
+      return
+    }
+    
     const tickers = ['SPY', 'QQQ', 'IWM', 'VTI', 'VOO', 'DIA', 'EEM', 'GLD']
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
     const validETFs: StockData[] = []
@@ -182,9 +203,20 @@ export default function MarketAnalysis() {
       setPopularETFs([...validETFs])
       await delay(200) // Small delay between requests
     }
+    
+    // Cache the results
+    setCache('market_popular_etfs', validETFs)
   }
 
   async function loadPopularBonds() {
+    // Check cache first (10 minutes)
+    const cached = getCache<StockData[]>('market_popular_bonds', 10)
+    if (cached && cached.length > 0) {
+      setPopularBonds(cached)
+      console.log('✅ Loaded popular bonds from cache')
+      return
+    }
+    
     const tickers = ['TLT', 'IEF', 'SHY', 'AGG', 'BND', 'LQD', 'HYG', 'MUB']
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
     const validBonds: StockData[] = []
@@ -195,6 +227,9 @@ export default function MarketAnalysis() {
       setPopularBonds([...validBonds])
       await delay(200) // Small delay between requests
     }
+    
+    // Cache the results
+    setCache('market_popular_bonds', validBonds)
   }
 
   async function handleSearch(e: React.FormEvent) {
