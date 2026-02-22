@@ -379,34 +379,26 @@ export async function getMarketIndices(): Promise<StockData[]> {
 
 export async function searchStocks(query: string): Promise<StockData[]> {
   try {
-    if (env.marketData.alphaVantageKey) {
-      const response = await axios.get(ALPHA_VANTAGE_BASE, {
-        params: {
-          function: 'SYMBOL_SEARCH',
-          keywords: query,
-          apikey: env.marketData.alphaVantageKey,
-        },
-      })
-
-      const matches = response.data.bestMatches || []
-      return matches.slice(0, 10).map((match: any) => ({
-        ticker: match['1. symbol'],
-        name: match['2. name'],
-        price: 0,
-        change: 0,
-        changePercent: 0,
-        volume: 0,
-        marketCap: 0,
-      }))
+    // Simple approach: try to get quote for the ticker directly
+    // This works for exact ticker matches (e.g., "AAPL", "MSFT")
+    const upperQuery = query.toUpperCase().trim()
+    
+    console.log(`🔍 Searching for: ${upperQuery}`)
+    
+    // Try to get quote directly
+    const quote = await getStockQuote(upperQuery)
+    if (quote) {
+      console.log(`✅ Found stock: ${quote.ticker}`)
+      return [quote]
     }
-
-    const response = await axios.get(`${FMP_BASE}/search`, {
-      params: {
-        query,
-        limit: 10,
-        apikey: env.marketData.fmpKey || 'demo',
-      },
-    })
+    
+    console.warn(`⚠️ No results found for: ${upperQuery}`)
+    return []
+  } catch (error) {
+    console.error('Search error:', error)
+    return []
+  }
+}
 
     return response.data.map((item: any) => ({
       ticker: item.symbol,
