@@ -6,7 +6,7 @@ import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
-import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home } from 'lucide-react'
+import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const industries: Array<{ label: string; value: string; tickers: string[]; icon: any }> = [
   { label: 'Todas', value: 'ALL', tickers: [], icon: null },
@@ -32,6 +32,8 @@ export default function MarketAnalysis() {
   const [popularBonds, setPopularBonds] = useState<StockData[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedIndustry, setSelectedIndustry] = useState('ALL')
+  const [sortColumn, setSortColumn] = useState<'price' | 'change' | 'volume' | 'marketCap' | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
 
   useEffect(() => {
     loadPopularStocks()
@@ -93,6 +95,53 @@ export default function MarketAnalysis() {
         setPopularStocks(filtered)
       }
     }
+  }
+
+  function handleSort(column: 'price' | 'change' | 'volume' | 'marketCap') {
+    const newDirection = sortColumn === column && sortDirection === 'desc' ? 'asc' : 'desc'
+    setSortColumn(column)
+    setSortDirection(newDirection)
+
+    const sortStocks = (stocks: StockData[]) => {
+      return [...stocks].sort((a, b) => {
+        let aVal = 0
+        let bVal = 0
+
+        switch (column) {
+          case 'price':
+            aVal = a.price
+            bVal = b.price
+            break
+          case 'change':
+            aVal = a.changePercent
+            bVal = b.changePercent
+            break
+          case 'volume':
+            aVal = a.volume
+            bVal = b.volume
+            break
+          case 'marketCap':
+            aVal = a.marketCap || 0
+            bVal = b.marketCap || 0
+            break
+        }
+
+        return newDirection === 'desc' ? bVal - aVal : aVal - bVal
+      })
+    }
+
+    setPopularStocks(sortStocks(popularStocks))
+    setPopularETFs(sortStocks(popularETFs))
+    setPopularBonds(sortStocks(popularBonds))
+  }
+
+  function SortIcon({ column }: { column: 'price' | 'change' | 'volume' | 'marketCap' }) {
+    if (sortColumn !== column) {
+      return <ArrowUpDown size={14} className="inline ml-1 text-gray-500" />
+    }
+    return sortDirection === 'desc' ? 
+      <ArrowDown size={14} className="inline ml-1 text-blue-400" /> : 
+      <ArrowUp size={14} className="inline ml-1 text-blue-400" />
   }
 
   async function loadPopularETFs() {
@@ -270,10 +319,30 @@ export default function MarketAnalysis() {
               <thead>
                 <tr className="text-left text-sm text-gray-400 border-b border-border">
                   <th className="py-2 px-4">Acción</th>
-                  <th className="py-2 px-4 text-right">Precio</th>
-                  <th className="py-2 px-4 text-right">Cambio</th>
-                  <th className="py-2 px-4 text-right">Volumen</th>
-                  <th className="py-2 px-4 text-right">Market Cap</th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('price')}
+                  >
+                    Precio <SortIcon column="price" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('change')}
+                  >
+                    Cambio <SortIcon column="change" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('volume')}
+                  >
+                    Volumen <SortIcon column="volume" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('marketCap')}
+                  >
+                    Market Cap <SortIcon column="marketCap" />
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -296,10 +365,30 @@ export default function MarketAnalysis() {
               <thead>
                 <tr className="text-left text-sm text-gray-400 border-b border-border">
                   <th className="py-2 px-4">ETF</th>
-                  <th className="py-2 px-4 text-right">Precio</th>
-                  <th className="py-2 px-4 text-right">Cambio</th>
-                  <th className="py-2 px-4 text-right">Volumen</th>
-                  <th className="py-2 px-4 text-right">Market Cap</th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('price')}
+                  >
+                    Precio <SortIcon column="price" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('change')}
+                  >
+                    Cambio <SortIcon column="change" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('volume')}
+                  >
+                    Volumen <SortIcon column="volume" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('marketCap')}
+                  >
+                    Market Cap <SortIcon column="marketCap" />
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -322,10 +411,30 @@ export default function MarketAnalysis() {
               <thead>
                 <tr className="text-left text-sm text-gray-400 border-b border-border">
                   <th className="py-2 px-4">Bono/ETF</th>
-                  <th className="py-2 px-4 text-right">Precio</th>
-                  <th className="py-2 px-4 text-right">Cambio</th>
-                  <th className="py-2 px-4 text-right">Volumen</th>
-                  <th className="py-2 px-4 text-right">Market Cap</th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('price')}
+                  >
+                    Precio <SortIcon column="price" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('change')}
+                  >
+                    Cambio <SortIcon column="change" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('volume')}
+                  >
+                    Volumen <SortIcon column="volume" />
+                  </th>
+                  <th 
+                    className="py-2 px-4 text-right cursor-pointer hover:text-gray-200 transition-colors"
+                    onClick={() => handleSort('marketCap')}
+                  >
+                    Market Cap <SortIcon column="marketCap" />
+                  </th>
                 </tr>
               </thead>
               <tbody>
