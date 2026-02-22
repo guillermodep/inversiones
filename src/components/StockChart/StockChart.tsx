@@ -47,6 +47,9 @@ export default function StockChart({ data, onPeriodChange, currentPeriod, loadin
   const minPrice = Math.min(...data.map(d => d.close))
   const maxPrice = Math.max(...data.map(d => d.close))
   const priceChange = data.length > 1 ? data[data.length - 1].close - data[0].close : 0
+  const percentChange = data.length > 1 && data[0].close > 0 
+    ? ((data[data.length - 1].close - data[0].close) / data[0].close) * 100 
+    : 0
   const isPositive = priceChange >= 0
 
   return (
@@ -67,6 +70,17 @@ export default function StockChart({ data, onPeriodChange, currentPeriod, loadin
           </button>
         ))}
       </div>
+
+      {!loading && data.length > 1 && (
+        <div className="text-center mb-2">
+          <span className={`text-2xl font-bold ${isPositive ? 'text-profit' : 'text-loss'}`}>
+            {isPositive ? '+' : ''}{percentChange.toFixed(2)}%
+          </span>
+          <span className="text-gray-400 text-sm ml-2">
+            ({currentPeriod})
+          </span>
+        </div>
+      )}
 
       {loading ? (
         <div className="h-80 flex items-center justify-center">
