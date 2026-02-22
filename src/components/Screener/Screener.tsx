@@ -186,10 +186,6 @@ export default function Screener() {
     const strategy = strategies.find(s => s.id === selectedStrategy)
     if (!strategy) return
 
-    // Distribute allocation equally among results
-    const allocationPerStock = Math.floor(100 / results.length)
-    const remainder = 100 - (allocationPerStock * results.length)
-
     const positions = results.map((stock) => ({
       ticker: stock.ticker,
       shares: 0, // User will need to set investment amount later
