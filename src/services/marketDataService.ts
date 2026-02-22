@@ -40,8 +40,9 @@ function generateMockQuote(ticker: string): StockData {
 
 export async function getStockQuote(ticker: string): Promise<StockData | null> {
   const cacheKey = `cache_quote_${ticker}`
-  const cached = getCache<StockData>(cacheKey)
-  if (cached) return cached
+  // Disable cache to always get fresh data
+  // const cached = getCache<StockData>(cacheKey)
+  // if (cached) return cached
 
   // Try yahoo-finance2 Netlify Function first (works in production)
   try {
