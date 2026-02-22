@@ -101,7 +101,7 @@ export default function MarketAnalysis() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Análisis de Mercado</h1>
-        <p className="text-gray-400 mt-1">Busca y analiza acciones</p>
+        <p className="text-gray-400 mt-1">Busca y analiza acciones, ETFs, bonos y más</p>
       </div>
 
       <Card>
@@ -112,7 +112,7 @@ export default function MarketAnalysis() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por ticker o nombre (ej: AAPL, Apple, Tesla)"
+              placeholder="Buscar por ticker (ej: AAPL, SPY, TLT, QQQ, BABA)"
               className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-3"
             />
           </div>
@@ -124,7 +124,7 @@ export default function MarketAnalysis() {
 
       {searchResults.length > 0 && (
         <Card>
-          <h2 className="text-xl font-bold mb-4">Resultados de Búsqueda</h2>
+          <h2 className="text-xl font-bold mb-4">Resultados</h2>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
