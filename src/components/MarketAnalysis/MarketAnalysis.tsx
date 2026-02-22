@@ -59,7 +59,19 @@ export default function MarketAnalysis() {
       
       // Update UI progressively
       setAllStocks([...validStocks])
-      setPopularStocks([...validStocks])
+      
+      // Apply current filter if one is selected
+      if (selectedIndustry === 'ALL') {
+        setPopularStocks([...validStocks])
+      } else {
+        const selectedIndustryData = industries.find(ind => ind.value === selectedIndustry)
+        if (selectedIndustryData) {
+          const filtered = validStocks.filter(stock => 
+            selectedIndustryData.tickers.includes(stock.ticker)
+          )
+          setPopularStocks(filtered)
+        }
+      }
       
       // Wait between batches to avoid rate limiting
       if (i + batchSize < allTickers.length) {
