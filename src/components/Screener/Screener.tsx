@@ -14,7 +14,7 @@ const strategies = [
     name: 'Value Investing',
     description: 'P/E bajo (<20), dividendos sólidos, empresas infravaloradas',
     icon: DollarSign,
-    tickers: ['KO', 'PG', 'JNJ', 'PFE', 'VZ', 'T', 'XOM', 'CVX'],
+    tickers: ['KO', 'PG', 'JNJ', 'PFE', 'VZ', 'T', 'XOM', 'CVX', 'TLT', 'AGG', 'BND'],
     criteria: (stock: StockData) => {
       const pe = stock.peRatio || 999
       const dividend = stock.dividendYield || 0
@@ -26,7 +26,7 @@ const strategies = [
     name: 'Dividend Aristocrats',
     description: 'Rendimiento >3%, historial consistente de dividendos',
     icon: TrendingUp,
-    tickers: ['KO', 'PG', 'JNJ', 'MMM', 'MCD', 'WMT', 'CAT', 'IBM'],
+    tickers: ['KO', 'PG', 'JNJ', 'MMM', 'MCD', 'WMT', 'CAT', 'IBM', 'VYM', 'SCHD', 'DVY'],
     criteria: (stock: StockData) => {
       const dividend = stock.dividendYield || 0
       return dividend > 3
@@ -37,7 +37,7 @@ const strategies = [
     name: 'High Growth',
     description: 'Crecimiento acelerado, líderes en innovación',
     icon: Zap,
-    tickers: ['NVDA', 'TSLA', 'META', 'GOOGL', 'MSFT', 'AMD', 'NFLX', 'AMZN'],
+    tickers: ['NVDA', 'TSLA', 'META', 'GOOGL', 'MSFT', 'AMD', 'NFLX', 'AMZN', 'QQQ', 'ARKK', 'VGT'],
     criteria: (stock: StockData) => {
       const change = stock.changePercent || 0
       return change > 0
@@ -48,7 +48,7 @@ const strategies = [
     name: 'Strong Momentum',
     description: 'Tendencia alcista fuerte, volumen alto',
     icon: Award,
-    tickers: ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'TSLA', 'AMD', 'NFLX'],
+    tickers: ['AAPL', 'MSFT', 'NVDA', 'GOOGL', 'META', 'TSLA', 'AMD', 'NFLX', 'SPY', 'QQQ', 'VOO'],
     criteria: (stock: StockData) => {
       const change = stock.changePercent || 0
       return change > 2
@@ -59,7 +59,7 @@ const strategies = [
     name: 'Quality Companies',
     description: 'Blue chips, balance sólido, líderes de mercado',
     icon: Building,
-    tickers: ['AAPL', 'MSFT', 'JNJ', 'JPM', 'V', 'MA', 'UNH', 'PG'],
+    tickers: ['AAPL', 'MSFT', 'JNJ', 'JPM', 'V', 'MA', 'UNH', 'PG', 'VTI', 'VOO', 'SPY'],
     criteria: (stock: StockData) => {
       const marketCap = stock.marketCap || 0
       return marketCap > 100_000_000_000
@@ -70,7 +70,7 @@ const strategies = [
     name: 'Tech Leaders',
     description: 'Líderes tecnológicos, innovación y crecimiento',
     icon: Sparkles,
-    tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'ORCL'],
+    tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'ORCL', 'QQQ', 'VGT', 'XLK'],
     criteria: () => true
   },
   {
@@ -78,7 +78,7 @@ const strategies = [
     name: 'YTD Winners',
     description: 'Mejores rendimientos del año, momentum sostenido',
     icon: Target,
-    tickers: ['NVDA', 'META', 'TSLA', 'AMD', 'GOOGL', 'MSFT', 'NFLX', 'AMZN'],
+    tickers: ['NVDA', 'META', 'TSLA', 'AMD', 'GOOGL', 'MSFT', 'NFLX', 'AMZN', 'QQQ', 'SPY', 'VGT'],
     criteria: (stock: StockData) => {
       const change = stock.changePercent || 0
       return change > 5
@@ -89,7 +89,7 @@ const strategies = [
     name: 'Earnings Beat',
     description: 'Empresas que superaron expectativas de revenue',
     icon: Award,
-    tickers: ['NVDA', 'META', 'GOOGL', 'MSFT', 'AAPL', 'AMZN', 'NFLX', 'AMD'],
+    tickers: ['NVDA', 'META', 'GOOGL', 'MSFT', 'AAPL', 'AMZN', 'NFLX', 'AMD', 'QQQ', 'VOO', 'VGT'],
     criteria: (stock: StockData) => {
       const change = stock.changePercent || 0
       const marketCap = stock.marketCap || 0
@@ -101,7 +101,7 @@ const strategies = [
     name: 'Positive News',
     description: 'Análisis de noticias recientes con sentimiento positivo',
     icon: Newspaper,
-    tickers: ['NVDA', 'TSLA', 'META', 'GOOGL', 'AAPL', 'MSFT', 'AMD', 'NFLX'],
+    tickers: ['NVDA', 'TSLA', 'META', 'GOOGL', 'AAPL', 'MSFT', 'AMD', 'NFLX', 'QQQ', 'SPY', 'ARKK'],
     criteria: (stock: StockData) => {
       const change = stock.changePercent || 0
       return change > 1
@@ -112,7 +112,7 @@ const strategies = [
     name: 'Defensive Plays',
     description: 'Acciones defensivas, baja volatilidad, dividendos estables',
     icon: Shield,
-    tickers: ['JNJ', 'PG', 'KO', 'PEP', 'WMT', 'MCD', 'UNH', 'CVS'],
+    tickers: ['JNJ', 'PG', 'KO', 'PEP', 'WMT', 'MCD', 'UNH', 'CVS', 'TLT', 'AGG', 'BND', 'IEF'],
     criteria: (stock: StockData) => {
       const dividend = stock.dividendYield || 0
       const pe = stock.peRatio || 999
@@ -124,7 +124,7 @@ const strategies = [
     name: 'Undervalued Gems',
     description: 'P/E bajo, potencial de revalorización',
     icon: DollarSign,
-    tickers: ['INTC', 'F', 'BAC', 'WFC', 'C', 'PFE', 'CVX', 'XOM'],
+    tickers: ['INTC', 'F', 'BAC', 'WFC', 'C', 'PFE', 'CVX', 'XOM', 'VTV', 'IWD', 'SCHV'],
     criteria: (stock: StockData) => {
       const pe = stock.peRatio || 999
       return pe < 15 && pe > 0
@@ -135,7 +135,7 @@ const strategies = [
     name: 'Contrarian Plays',
     description: 'Acciones en baja con potencial de rebote',
     icon: TrendingDown,
-    tickers: ['INTC', 'DIS', 'PYPL', 'BABA', 'NIO', 'RIVN', 'LCID', 'F'],
+    tickers: ['INTC', 'DIS', 'PYPL', 'BABA', 'NIO', 'RIVN', 'LCID', 'F', 'EEM', 'VWO', 'IEMG'],
     criteria: (stock: StockData) => {
       const change = stock.changePercent || 0
       return change < -2
@@ -215,9 +215,18 @@ export default function Screener() {
         <Card>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Resultados</h2>
-            {results.length > 0 && (
-              <p className="text-sm text-gray-400">{results.length} acciones encontradas</p>
-            )}
+            <div className="flex items-center gap-3">
+              {results.length > 0 && (
+                <>
+                  <p className="text-sm text-gray-400">{results.length} instrumentos encontrados</p>
+                  <Button
+                    onClick={() => navigate('/portfolio-builder', { state: { strategyResults: results } })}
+                  >
+                    Construir Portfolio
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -225,7 +234,10 @@ export default function Screener() {
               <Loading />
             </div>
           ) : results.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">No se encontraron resultados para esta estrategia</p>
+            <div className="text-center py-12">
+              <p className="text-xl font-medium text-gray-300 mb-2">Este no es el momento de esta estrategia</p>
+              <p className="text-gray-400">El mercado está mirando otras acciones. Prueba con otra estrategia.</p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
