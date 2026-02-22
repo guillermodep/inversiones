@@ -4,7 +4,8 @@ import { searchStocks, getStockQuote } from '@/services/marketDataService'
 import { StockData } from '@/types'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Loading from '@/components/ui/Loading'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import FadeIn from '@/components/ui/FadeIn'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
 import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
@@ -312,7 +313,7 @@ export default function MarketAnalysis() {
         </div>
 
         {popularStocks.length === 0 ? (
-          <Loading />
+          <SkeletonTable rows={8} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -358,7 +359,7 @@ export default function MarketAnalysis() {
       <Card>
         <h2 className="text-xl font-bold mb-4">ETFs Populares</h2>
         {popularETFs.length === 0 ? (
-          <Loading />
+          <SkeletonTable rows={8} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -404,7 +405,7 @@ export default function MarketAnalysis() {
       <Card>
         <h2 className="text-xl font-bold mb-4">Bonos y ETFs de Renta Fija</h2>
         {popularBonds.length === 0 ? (
-          <Loading />
+          <SkeletonTable rows={8} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">

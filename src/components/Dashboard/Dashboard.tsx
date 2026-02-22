@@ -4,7 +4,8 @@ import { getMarketIndices, getStockQuote } from '@/services/marketDataService'
 import { getMarketNews } from '@/services/newsService'
 import { StockData, NewsItem } from '@/types'
 import Card from '@/components/ui/Card'
-import Loading from '@/components/ui/Loading'
+import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
+import FadeIn from '@/components/ui/FadeIn'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 import { TrendingUp, TrendingDown, Newspaper, AlertTriangle, Wallet, PieChart, BarChart3, Activity } from 'lucide-react'
 import { hasLLMConfig } from '@/config/env'
@@ -138,10 +139,42 @@ export default function Dashboard() {
     return sectors[ticker] || 'Other'
   }
 
-  if (loading) return <Loading />
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-gray-400 mt-1">Cargando datos del mercado...</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <SkeletonMetricCard />
+          <SkeletonMetricCard />
+          <SkeletonMetricCard />
+          <SkeletonMetricCard />
+        </div>
+
+        <div>
+          <div className="h-6 w-48 bg-gray-700 rounded animate-pulse mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <FadeIn>
+      <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-gray-400 mt-1">Resumen de mercado y tus inversiones</p>
@@ -414,6 +447,7 @@ export default function Dashboard() {
           </div>
         </Card>
       )}
-    </div>
+      </div>
+    </FadeIn>
   )
 }

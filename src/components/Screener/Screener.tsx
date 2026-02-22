@@ -5,7 +5,8 @@ import { StockData } from '@/types'
 import { useStore } from '@/store/useStore'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Loading from '@/components/ui/Loading'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import FadeIn from '@/components/ui/FadeIn'
 import { TrendingUp, DollarSign, Zap, Award, Building, Sparkles, TrendingDown, Newspaper, Shield, Target } from 'lucide-react'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
@@ -258,9 +259,7 @@ export default function Screener() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loading />
-            </div>
+            <SkeletonTable rows={10} />
           ) : results.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-xl font-medium text-gray-300 mb-2">Este no es el momento de esta estrategia</p>
