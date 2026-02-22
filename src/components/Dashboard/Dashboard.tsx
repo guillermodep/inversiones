@@ -6,6 +6,8 @@ import { StockData, NewsItem } from '@/types'
 import Card from '@/components/ui/Card'
 import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
 import FadeIn from '@/components/ui/FadeIn'
+import CountUp from '@/components/ui/CountUp'
+import Badge from '@/components/ui/Badge'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 import { TrendingUp, TrendingDown, Newspaper, AlertTriangle, Wallet, PieChart, BarChart3, Activity } from 'lucide-react'
 import { hasLLMConfig } from '@/config/env'
@@ -176,7 +178,7 @@ export default function Dashboard() {
     <FadeIn>
       <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <h1 className="text-4xl font-bold text-gradient">Dashboard</h1>
         <p className="text-gray-400 mt-1">Resumen de mercado y tus inversiones</p>
       </div>
 
@@ -185,37 +187,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-blue-500/10 rounded-lg">
-                <Wallet className="text-blue-400" size={24} />
+              <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg glow-blue">
+                <Wallet className="text-white" size={24} />
               </div>
               <div>
-                <p className="text-sm text-gray-400">Valor Total</p>
-                <p className="text-2xl font-bold">{formatCurrency(metrics.totalValue)}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-purple-500/10 rounded-lg">
-                <BarChart3 className="text-purple-400" size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Invertido</p>
-                <p className="text-2xl font-bold">{formatCurrency(metrics.totalCost)}</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card>
-            <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-lg ${metrics.totalPnL >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                <Activity className={metrics.totalPnL >= 0 ? 'text-green-400' : 'text-red-400'} size={24} />
-              </div>
-              <div>
-                <p className="text-sm text-gray-400">Ganancia/Pérdida</p>
-                <p className={`text-2xl font-bold ${metrics.totalPnL >= 0 ? 'text-profit' : 'text-loss'}`}>
-                  {metrics.totalPnL >= 0 ? '+' : ''}{formatCurrency(metrics.totalPnL)}
+                <p className="text-sm text-gray-400 font-medium">Valor Total</p>
+                <p className="text-2xl font-bold font-mono-numbers">
+                  <CountUp end={metrics.totalValue} decimals={2} prefix="$" />
                 </p>
               </div>
             </div>
@@ -223,17 +201,47 @@ export default function Dashboard() {
 
           <Card>
             <div className="flex items-center gap-3">
-              <div className={`p-3 rounded-lg ${metrics.totalPnLPercent >= 0 ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg glow-purple">
+                <BarChart3 className="text-white" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400 font-medium">Invertido</p>
+                <p className="text-2xl font-bold font-mono-numbers">
+                  <CountUp end={metrics.totalCost} decimals={2} prefix="$" />
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-lg ${metrics.totalPnL >= 0 ? 'bg-gradient-to-br from-green-500 to-emerald-500 glow-green' : 'bg-gradient-to-br from-red-500 to-orange-500 glow-red'}`}>
+                <Activity className="text-white" size={24} />
+              </div>
+              <div>
+                <p className="text-sm text-gray-400 font-medium">Ganancia/Pérdida</p>
+                <p className={`text-2xl font-bold font-mono-numbers ${metrics.totalPnL >= 0 ? 'text-gradient-profit' : 'text-gradient-loss'}`}>
+                  {metrics.totalPnL >= 0 ? '+' : ''}
+                  <CountUp end={Math.abs(metrics.totalPnL)} decimals={2} prefix="$" />
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex items-center gap-3">
+              <div className={`p-3 rounded-lg ${metrics.totalPnLPercent >= 0 ? 'bg-gradient-to-br from-green-500 to-emerald-500 glow-green' : 'bg-gradient-to-br from-red-500 to-orange-500 glow-red'}`}>
                 {metrics.totalPnLPercent >= 0 ? (
-                  <TrendingUp className="text-green-400" size={24} />
+                  <TrendingUp className="text-white" size={24} />
                 ) : (
-                  <TrendingDown className="text-red-400" size={24} />
+                  <TrendingDown className="text-white" size={24} />
                 )}
               </div>
               <div>
-                <p className="text-sm text-gray-400">ROI</p>
-                <p className={`text-2xl font-bold ${metrics.totalPnLPercent >= 0 ? 'text-profit' : 'text-loss'}`}>
-                  {metrics.totalPnLPercent >= 0 ? '+' : ''}{metrics.totalPnLPercent.toFixed(2)}%
+                <p className="text-sm text-gray-400 font-medium">ROI</p>
+                <p className={`text-3xl font-bold font-mono-numbers ${metrics.totalPnLPercent >= 0 ? 'text-gradient-profit' : 'text-gradient-loss'}`}>
+                  {metrics.totalPnLPercent >= 0 ? '+' : ''}
+                  <CountUp end={Math.abs(metrics.totalPnLPercent)} decimals={2} suffix="%" />
                 </p>
               </div>
             </div>
@@ -243,7 +251,7 @@ export default function Dashboard() {
 
       {/* Market Indices */}
       <div>
-        <h2 className="text-xl font-bold mb-4">Índices de Mercado</h2>
+        <h2 className="text-2xl font-bold mb-4 text-gradient">Índices de Mercado</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {indices.map((index) => (
             <Card key={index.ticker}>
@@ -274,7 +282,9 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="text-profit" size={20} />
+            <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-lg">
+              <TrendingUp className="text-white" size={20} />
+            </div>
             <h2 className="text-xl font-bold">Top Gainers</h2>
           </div>
           <div className="space-y-2">
@@ -301,7 +311,9 @@ export default function Dashboard() {
 
         <Card>
           <div className="flex items-center gap-2 mb-4">
-            <TrendingDown className="text-loss" size={20} />
+            <div className="p-2 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg">
+              <TrendingDown className="text-white" size={20} />
+            </div>
             <h2 className="text-xl font-bold">Top Losers</h2>
           </div>
           <div className="space-y-2">

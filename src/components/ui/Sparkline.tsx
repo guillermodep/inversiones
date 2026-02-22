@@ -30,7 +30,12 @@ export default function Sparkline({
 
   // Determine color based on trend
   const trend = data[data.length - 1] - data[0]
-  const strokeColor = color || (trend >= 0 ? '#10b981' : '#ef4444')
+  const isPositive = trend >= 0
+  const strokeColor = color || (isPositive ? '#10b981' : '#ef4444')
+  const gradientId = `gradient-${Math.random().toString(36).substr(2, 9)}`
+
+  // Create area path
+  const areaPoints = `${points} ${width},${height} 0,${height}`
 
   return (
     <svg 
@@ -39,11 +44,21 @@ export default function Sparkline({
       className={className}
       style={{ display: 'block' }}
     >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={strokeColor} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={strokeColor} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={areaPoints}
+        fill={`url(#${gradientId})`}
+      />
       <polyline
         points={points}
         fill="none"
         stroke={strokeColor}
-        strokeWidth="1.5"
+        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

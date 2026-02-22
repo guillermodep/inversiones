@@ -13,7 +13,7 @@ export default function Skeleton({
   height,
   count = 1
 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse bg-gray-700'
+  const baseClasses = 'bg-gray-700 shimmer relative overflow-hidden'
   
   const variantClasses = {
     text: 'rounded h-4',
