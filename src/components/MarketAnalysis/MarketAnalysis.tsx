@@ -313,14 +313,17 @@ export default function MarketAnalysis() {
               <button
                 key={industry.value}
                 onClick={() => handleIndustryFilter(industry.value)}
-                className={`px-3 py-1.5 text-sm font-medium rounded transition-colors flex items-center gap-1.5 ${
+                title={industry.label}
+                className={`p-2.5 rounded-lg transition-all duration-200 flex items-center justify-center group relative ${
                   selectedIndustry === industry.value
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/50'
+                    : 'bg-card border border-border text-gray-300 hover:bg-gray-700 hover:border-blue-500/50'
                 }`}
               >
-                {Icon && <Icon size={16} />}
-                {industry.label}
+                {Icon ? <Icon size={20} /> : <span className="text-xs font-bold">ALL</span>}
+                <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                  {industry.label}
+                </span>
               </button>
             )
           })}
