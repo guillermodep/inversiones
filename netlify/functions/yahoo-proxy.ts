@@ -1,7 +1,6 @@
-import type { Handler } from '@netlify/functions'
-import axios from 'axios'
+import type { Handler, HandlerEvent } from '@netlify/functions'
 
-export const handler: Handler = async (event) => {
+export const handler: Handler = async (event: HandlerEvent) => {
   // Enable CORS
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -27,11 +26,18 @@ export const handler: Handler = async (event) => {
     
     console.log('Proxying request to:', yahooUrl)
     
-    const response = await axios.get(yahooUrl, {
+    // Use native fetch instead of axios to avoid bundling issues
+    const response = await fetch(yahooUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       },
     })
+
+    if (!response.ok) {
+      throw new Error(`Yahoo Finance returned ${response.status}`)
+    }
+
+    const data = await response.json()
 
     return {
       statusCode: 200,
@@ -39,12 +45,12 @@ export const handler: Handler = async (event) => {
         ...headers,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(response.data),
+      body: JSON.stringify(data),
     }
   } catch (error: any) {
     console.error('Yahoo Finance proxy error:', error.message)
     return {
-      statusCode: error.response?.status || 500,
+      statusCode: 500,
       headers,
       body: JSON.stringify({ 
         error: 'Failed to fetch from Yahoo Finance',
