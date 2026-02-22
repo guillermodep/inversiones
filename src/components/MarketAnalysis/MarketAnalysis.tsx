@@ -8,14 +8,27 @@ import Loading from '@/components/ui/Loading'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
 import { Search } from 'lucide-react'
 
+const industries = [
+  { label: 'Todas', value: 'ALL', tickers: [] },
+  { label: 'Tech', value: 'TECH', tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'NFLX'] },
+  { label: 'Healthcare', value: 'HEALTHCARE', tickers: ['JNJ', 'UNH', 'PFE', 'ABBV', 'TMO', 'ABT', 'MRK', 'LLY'] },
+  { label: 'Pharma', value: 'PHARMA', tickers: ['PFE', 'ABBV', 'MRK', 'LLY', 'BMY', 'GILD', 'AMGN', 'REGN'] },
+  { label: 'Energy', value: 'ENERGY', tickers: ['XOM', 'CVX', 'COP', 'SLB', 'EOG', 'MPC', 'PSX', 'VLO'] },
+  { label: 'Banks', value: 'BANKS', tickers: ['JPM', 'BAC', 'WFC', 'C', 'GS', 'MS', 'USB', 'PNC'] },
+  { label: 'Retail', value: 'RETAIL', tickers: ['WMT', 'AMZN', 'HD', 'TGT', 'COST', 'LOW', 'TJX', 'DG'] },
+  { label: 'Auto', value: 'AUTO', tickers: ['TSLA', 'F', 'GM', 'RIVN', 'LCID', 'NIO', 'LI', 'XPEV'] },
+]
+
 export default function MarketAnalysis() {
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<StockData[]>([])
   const [popularStocks, setPopularStocks] = useState<StockData[]>([])
+  const [allStocks, setAllStocks] = useState<StockData[]>([])
   const [popularETFs, setPopularETFs] = useState<StockData[]>([])
   const [popularBonds, setPopularBonds] = useState<StockData[]>([])
   const [loading, setLoading] = useState(false)
+  const [selectedIndustry, setSelectedIndustry] = useState('ALL')
 
   useEffect(() => {
     loadPopularStocks()
@@ -24,14 +37,32 @@ export default function MarketAnalysis() {
   }, [])
 
   async function loadPopularStocks() {
-    const tickers = [
-      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM',
-      'V', 'WMT', 'DIS', 'NFLX', 'PYPL', 'INTC', 'AMD', 'BABA'
-    ]
+    // Combinar todos los tickers de todas las industrias
+    const allTickers = Array.from(new Set(
+      industries.flatMap(ind => ind.tickers)
+    ))
+    
     const results = await Promise.all(
-      tickers.map((ticker) => getStockQuote(ticker))
+      allTickers.map((ticker) => getStockQuote(ticker))
     )
-    setPopularStocks(results.filter((r): r is StockData => r !== null))
+    const validStocks = results.filter((r): r is StockData => r !== null)
+    setAllStocks(validStocks)
+    setPopularStocks(validStocks)
+  }
+
+  function handleIndustryFilter(industry: string) {
+    setSelectedIndustry(industry)
+    if (industry === 'ALL') {
+      setPopularStocks(allStocks)
+    } else {
+      const selectedIndustryData = industries.find(ind => ind.value === industry)
+      if (selectedIndustryData) {
+        const filtered = allStocks.filter(stock => 
+          selectedIndustryData.tickers.includes(stock.ticker)
+        )
+        setPopularStocks(filtered)
+      }
+    }
   }
 
   async function loadPopularETFs() {
@@ -167,7 +198,26 @@ export default function MarketAnalysis() {
       )}
 
       <Card>
-        <h2 className="text-xl font-bold mb-4">Acciones Populares</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Acciones Populares</h2>
+        </div>
+        
+        <div className="flex flex-wrap gap-2 mb-4">
+          {industries.map((industry) => (
+            <button
+              key={industry.value}
+              onClick={() => handleIndustryFilter(industry.value)}
+              className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
+                selectedIndustry === industry.value
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
+            >
+              {industry.label}
+            </button>
+          ))}
+        </div>
+
         {popularStocks.length === 0 ? (
           <Loading />
         ) : (
