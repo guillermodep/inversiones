@@ -5,7 +5,7 @@ import { StockData } from '@/types'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Loading from '@/components/ui/Loading'
-import { TrendingUp, DollarSign, Zap, Award, Building, Sparkles } from 'lucide-react'
+import { TrendingUp, DollarSign, Zap, Award, Building, Sparkles, TrendingDown, Newspaper, Shield, Target } from 'lucide-react'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 
 const strategies = [
@@ -72,6 +72,74 @@ const strategies = [
     icon: Sparkles,
     tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'ORCL'],
     criteria: () => true
+  },
+  {
+    id: 'ytd-winners',
+    name: 'YTD Winners',
+    description: 'Mejores rendimientos del año, momentum sostenido',
+    icon: Target,
+    tickers: ['NVDA', 'META', 'TSLA', 'AMD', 'GOOGL', 'MSFT', 'NFLX', 'AMZN'],
+    criteria: (stock: StockData) => {
+      const change = stock.changePercent || 0
+      return change > 5
+    }
+  },
+  {
+    id: 'earnings-beat',
+    name: 'Earnings Beat',
+    description: 'Empresas que superaron expectativas de revenue',
+    icon: Award,
+    tickers: ['NVDA', 'META', 'GOOGL', 'MSFT', 'AAPL', 'AMZN', 'NFLX', 'AMD'],
+    criteria: (stock: StockData) => {
+      const change = stock.changePercent || 0
+      const marketCap = stock.marketCap || 0
+      return change > 3 && marketCap > 50_000_000_000
+    }
+  },
+  {
+    id: 'news-sentiment',
+    name: 'Positive News',
+    description: 'Análisis de noticias recientes con sentimiento positivo',
+    icon: Newspaper,
+    tickers: ['NVDA', 'TSLA', 'META', 'GOOGL', 'AAPL', 'MSFT', 'AMD', 'NFLX'],
+    criteria: (stock: StockData) => {
+      const change = stock.changePercent || 0
+      return change > 1
+    }
+  },
+  {
+    id: 'defensive',
+    name: 'Defensive Plays',
+    description: 'Acciones defensivas, baja volatilidad, dividendos estables',
+    icon: Shield,
+    tickers: ['JNJ', 'PG', 'KO', 'PEP', 'WMT', 'MCD', 'UNH', 'CVS'],
+    criteria: (stock: StockData) => {
+      const dividend = stock.dividendYield || 0
+      const pe = stock.peRatio || 999
+      return dividend > 2 && pe < 25
+    }
+  },
+  {
+    id: 'undervalued',
+    name: 'Undervalued Gems',
+    description: 'P/E bajo, potencial de revalorización',
+    icon: DollarSign,
+    tickers: ['INTC', 'F', 'BAC', 'WFC', 'C', 'PFE', 'CVX', 'XOM'],
+    criteria: (stock: StockData) => {
+      const pe = stock.peRatio || 999
+      return pe < 15 && pe > 0
+    }
+  },
+  {
+    id: 'contrarian',
+    name: 'Contrarian Plays',
+    description: 'Acciones en baja con potencial de rebote',
+    icon: TrendingDown,
+    tickers: ['INTC', 'DIS', 'PYPL', 'BABA', 'NIO', 'RIVN', 'LCID', 'F'],
+    criteria: (stock: StockData) => {
+      const change = stock.changePercent || 0
+      return change < -2
+    }
   },
 ]
 
