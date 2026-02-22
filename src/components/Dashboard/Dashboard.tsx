@@ -8,6 +8,7 @@ import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
 import FadeIn from '@/components/ui/FadeIn'
 import CountUp from '@/components/ui/CountUp'
 import MarketHeatmap from '@/components/ui/MarketHeatmap'
+import InvestmentQuote from '@/components/ui/InvestmentQuote'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 import { getCache, setCache } from '@/utils/cache'
 import { TrendingUp, TrendingDown, Newspaper, AlertTriangle, Wallet, PieChart, BarChart3, Activity } from 'lucide-react'
@@ -54,11 +55,6 @@ export default function Dashboard() {
     loadDashboardData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  
-  // Use loading states to prevent TS6133 errors (will be used for progressive UI in next update)
-  if (loadingIndices || loadingNews || loadingTopMovers || loadingHeatmap) {
-    // Loading states tracked for progressive rendering
-  }
 
   async function loadDashboardData() {
     setLoading(true)
@@ -241,38 +237,7 @@ export default function Dashboard() {
     return sectors[ticker] || 'Other'
   }
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-gray-400 mt-1">Cargando datos del mercado...</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <SkeletonMetricCard />
-          <SkeletonMetricCard />
-          <SkeletonMetricCard />
-          <SkeletonMetricCard />
-        </div>
-
-        <div>
-          <div className="h-6 w-48 bg-gray-700 rounded animate-pulse mb-4" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <SkeletonCard />
-          <SkeletonCard />
-        </div>
-      </div>
-    )
-  }
+  const anyLoading = loadingIndices || loadingNews || loadingTopMovers || loadingHeatmap
 
   return (
     <FadeIn>
@@ -281,6 +246,9 @@ export default function Dashboard() {
         <h1 className="text-4xl font-bold text-gradient">Dashboard</h1>
         <p className="text-gray-400 mt-1">Resumen de mercado y tus inversiones</p>
       </div>
+
+      {/* Investment Quote - shown while loading */}
+      {anyLoading && <InvestmentQuote />}
 
       {/* Portfolio Metrics */}
       {portfolios.length > 0 && (
@@ -352,6 +320,14 @@ export default function Dashboard() {
       {/* Market Indices */}
       <div>
         <h2 className="text-2xl font-bold mb-4 text-gradient">Índices de Mercado</h2>
+        {loadingIndices ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+        ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {indices.map((index) => (
             <Card key={index.ticker}>
@@ -376,10 +352,21 @@ export default function Dashboard() {
             </Card>
           ))}
         </div>
+        )}
       </div>
 
       {/* Market Heatmap */}
-      {heatmapData.length > 0 && (
+      {loadingHeatmap ? (
+        <Card>
+          <h2 className="text-2xl font-bold mb-4 text-gradient">Market Overview</h2>
+          <p className="text-sm text-gray-400 mb-4">Cargando vista del mercado...</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            {[...Array(20)].map((_, i) => (
+              <div key={i} className="h-24 bg-gray-700 rounded-lg shimmer" />
+            ))}
+          </div>
+        </Card>
+      ) : heatmapData.length > 0 && (
         <Card>
           <h2 className="text-2xl font-bold mb-4 text-gradient">Market Overview</h2>
           <p className="text-sm text-gray-400 mb-4">Vista en tiempo real del mercado - Acciones, ETFs y Bonos</p>
@@ -388,6 +375,12 @@ export default function Dashboard() {
       )}
 
       {/* Top Gainers & Losers */}
+      {loadingTopMovers ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      ) : (
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <div className="flex items-center gap-2 mb-4">
@@ -447,6 +440,7 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
+      )}
 
       {/* Portfolios & Sector Allocation */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
