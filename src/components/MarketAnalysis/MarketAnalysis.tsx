@@ -5,7 +5,8 @@ import { StockData } from '@/types'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import { SkeletonTable } from '@/components/ui/Skeleton'
-import FadeIn from '@/components/ui/FadeIn'
+import Pagination from '@/components/ui/Pagination'
+import Sparkline from '@/components/ui/Sparkline'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
 import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
@@ -35,6 +36,8 @@ export default function MarketAnalysis() {
   const [selectedIndustry, setSelectedIndustry] = useState('ALL')
   const [sortColumn, setSortColumn] = useState<'price' | 'change' | 'volume' | 'marketCap' | null>(null)
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
 
   useEffect(() => {
     loadPopularStocks()
@@ -85,6 +88,7 @@ export default function MarketAnalysis() {
 
   function handleIndustryFilter(industry: string) {
     setSelectedIndustry(industry)
+    setCurrentPage(1) // Reset to first page when filtering
     if (industry === 'ALL') {
       setPopularStocks(allStocks)
     } else {
@@ -102,6 +106,7 @@ export default function MarketAnalysis() {
     const newDirection = sortColumn === column && sortDirection === 'desc' ? 'asc' : 'desc'
     setSortColumn(column)
     setSortDirection(newDirection)
+    setCurrentPage(1) // Reset to first page when sorting
 
     const sortStocks = (stocks: StockData[]) => {
       return [...stocks].sort((a, b) => {
@@ -210,6 +215,10 @@ export default function MarketAnalysis() {
 
   function StockRow({ stock }: { stock: StockData }) {
     const instrumentType = getInstrumentType(stock.ticker)
+    // Generate mock sparkline data (in real app, fetch historical data)
+    const sparklineData = Array.from({ length: 7 }, () => 
+      stock.price * (0.95 + Math.random() * 0.1)
+    )
     
     return (
       <tr
@@ -233,6 +242,11 @@ export default function MarketAnalysis() {
         </td>
         <td className="py-3 px-4 text-right text-sm text-gray-400">
           {stock.marketCap ? formatLargeNumber(stock.marketCap) : 'N/A'}
+        </td>
+        <td className="py-3 px-4 text-right">
+          <div className="flex justify-end">
+            <Sparkline data={sparklineData} width={60} height={20} />
+          </div>
         </td>
       </tr>
     )
@@ -315,6 +329,7 @@ export default function MarketAnalysis() {
         {popularStocks.length === 0 ? (
           <SkeletonTable rows={8} />
         ) : (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -344,15 +359,28 @@ export default function MarketAnalysis() {
                   >
                     Market Cap <SortIcon column="marketCap" />
                   </th>
+                  <th className="py-2 px-4 text-right">Tendencia</th>
                 </tr>
               </thead>
               <tbody>
-                {popularStocks.map((stock) => (
-                  <StockRow key={stock.ticker} stock={stock} />
-                ))}
+                {popularStocks
+                  .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                  .map((stock) => (
+                    <StockRow key={stock.ticker} stock={stock} />
+                  ))}
               </tbody>
             </table>
           </div>
+          {popularStocks.length > itemsPerPage && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={Math.ceil(popularStocks.length / itemsPerPage)}
+              onPageChange={setCurrentPage}
+              itemsPerPage={itemsPerPage}
+              totalItems={popularStocks.length}
+            />
+          )}
+          </>
         )}
       </Card>
 
