@@ -46,7 +46,7 @@ export default function Settings() {
               <div className="flex items-center justify-between p-3 bg-background rounded-lg">
                 <div>
                   <p className="font-medium">Endpoint Azure</p>
-                  <p className="text-sm text-gray-400">{env.llm.azure.endpoint || 'No configurado'}</p>
+                  <p className="text-sm text-gray-400">{env.llm.azure.endpoint ? 'Configurado' : 'No configurado'}</p>
                 </div>
                 <StatusIcon active={!!env.llm.azure.endpoint} />
               </div>
@@ -178,9 +178,9 @@ export default function Settings() {
             <p className="font-medium mb-2">Ejemplo de .env (Azure OpenAI):</p>
             <pre className="text-xs overflow-x-auto">
 {`VITE_LLM_PROVIDER=azure
-VITE_AZURE_OPENAI_ENDPOINT=https://openai-dev-coe.openai.azure.com
+VITE_AZURE_OPENAI_ENDPOINT=https://tu-recurso.openai.azure.com
 VITE_AZURE_OPENAI_API_KEY=tu_api_key_aqui
-VITE_AZURE_OPENAI_DEPLOYMENT=gpt-5-nano
+VITE_AZURE_OPENAI_DEPLOYMENT=tu-deployment
 VITE_AZURE_OPENAI_API_VERSION=2025-01-01-preview`}
             </pre>
           </div>

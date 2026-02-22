@@ -105,7 +105,7 @@ export default function Layout({ children }: LayoutProps) {
 
         {sidebarOpen && (
           <div className="p-4 border-t border-border text-xs text-gray-500">
-            <p>© 2024 Inversiones App</p>
+            <p>© 2026 Inversiones App</p>
             <p className="mt-1">No es asesoramiento financiero</p>
           </div>
         )}
