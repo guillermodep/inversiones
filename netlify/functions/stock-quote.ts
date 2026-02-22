@@ -43,10 +43,23 @@ export const handler: Handler = async (event: HandlerEvent) => {
       throw new Error('Invalid response from Yahoo Finance')
     }
 
+    // Log the meta data to see what we're getting
+    console.log(`Yahoo Finance meta for ${ticker}:`, JSON.stringify(result.meta, null, 2))
+
+    // Get the most recent price from quote data
+    const quote = result.indicators?.quote?.[0]
+    const lastIndex = quote?.close?.length - 1 || 0
+    const currentPrice = quote?.close?.[lastIndex] || result.meta.regularMarketPrice
+
+    console.log(`Current price for ${ticker}: ${currentPrice} (from quote) vs ${result.meta.regularMarketPrice} (from meta)`)
+
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify(result.meta),
+      body: JSON.stringify({
+        ...result.meta,
+        currentPrice: currentPrice, // Add explicit current price field
+      }),
     }
   } catch (error: any) {
     console.error('Error fetching stock quote:', error)

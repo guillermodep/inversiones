@@ -55,10 +55,13 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
     console.log(`📡 Netlify Function response for ${ticker}:`, meta)
 
     if (meta && meta.symbol) {
-      const currentPrice = meta.regularMarketPrice || 0
+      // Use currentPrice from function if available, otherwise regularMarketPrice
+      const currentPrice = meta.currentPrice || meta.regularMarketPrice || 0
       const previousClose = meta.previousClose || meta.chartPreviousClose || currentPrice
       const change = currentPrice - previousClose
       const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0
+      
+      console.log(`💰 Price for ${ticker}: ${currentPrice} (change: ${change}, ${changePercent.toFixed(2)}%)`)
 
       const data: StockData = {
         ticker: meta.symbol,
