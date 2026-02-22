@@ -1,5 +1,4 @@
 import type { Handler, HandlerEvent } from '@netlify/functions'
-import yahooFinance from 'yahoo-finance2'
 
 export const handler: Handler = async (event: HandlerEvent) => {
   const headers = {
@@ -26,20 +25,44 @@ export const handler: Handler = async (event: HandlerEvent) => {
       }
     }
 
-    console.log(`Fetching historical data for ${ticker} using yahoo-finance2`)
+    console.log(`Fetching historical data for ${ticker} from Yahoo Finance`)
 
-    const queryOptions = {
-      period1: new Date(parseInt(period1) * 1000),
-      period2: new Date(parseInt(period2) * 1000),
-      interval: interval as any,
+    // Direct Yahoo Finance API call
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?period1=${period1}&period2=${period2}&interval=${interval}`
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`Yahoo Finance returned ${response.status}`)
     }
 
-    const result = await yahooFinance.historical(ticker, queryOptions)
+    const data = await response.json()
+    const result = data?.chart?.result?.[0]
+
+    if (!result || !result.timestamp) {
+      throw new Error('Invalid response from Yahoo Finance')
+    }
+
+    // Transform to simple array format
+    const timestamps = result.timestamp
+    const quote = result.indicators?.quote?.[0]
+    
+    const historicalData = timestamps.map((timestamp: number, index: number) => ({
+      date: new Date(timestamp * 1000).toISOString(),
+      open: quote?.open?.[index] || 0,
+      high: quote?.high?.[index] || 0,
+      low: quote?.low?.[index] || 0,
+      close: quote?.close?.[index] || 0,
+      volume: quote?.volume?.[index] || 0,
+    }))
 
     return {
       statusCode: 200,
       headers: { ...headers, 'Content-Type': 'application/json' },
-      body: JSON.stringify(result),
+      body: JSON.stringify(historicalData),
     }
   } catch (error: any) {
     console.error('Error fetching historical data:', error)

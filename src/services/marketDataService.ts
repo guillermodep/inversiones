@@ -51,37 +51,37 @@ export async function getStockQuote(ticker: string): Promise<StockData | null> {
       timeout: 10000,
     })
 
-    const quote = response.data
-    console.log(`📡 yahoo-finance2 response for ${ticker}:`, quote)
+    const meta = response.data
+    console.log(`📡 Netlify Function response for ${ticker}:`, meta)
 
-    if (quote && quote.symbol) {
-      const currentPrice = quote.regularMarketPrice || 0
-      const previousClose = quote.regularMarketPreviousClose || currentPrice
+    if (meta && meta.symbol) {
+      const currentPrice = meta.regularMarketPrice || 0
+      const previousClose = meta.previousClose || meta.chartPreviousClose || currentPrice
       const change = currentPrice - previousClose
       const changePercent = previousClose > 0 ? (change / previousClose) * 100 : 0
 
       const data: StockData = {
-        ticker: quote.symbol,
-        name: quote.longName || quote.shortName || ticker,
+        ticker: meta.symbol,
+        name: meta.longName || meta.shortName || ticker,
         price: currentPrice,
         change: change,
         changePercent: changePercent,
-        volume: quote.regularMarketVolume || 0,
-        marketCap: quote.marketCap || 0,
-        open: quote.regularMarketOpen || currentPrice,
-        high: quote.regularMarketDayHigh || currentPrice,
-        low: quote.regularMarketDayLow || currentPrice,
+        volume: meta.regularMarketVolume || 0,
+        marketCap: meta.marketCap || 0,
+        open: meta.regularMarketOpen || currentPrice,
+        high: meta.regularMarketDayHigh || currentPrice,
+        low: meta.regularMarketDayLow || currentPrice,
         previousClose: previousClose,
-        fiftyTwoWeekHigh: quote.fiftyTwoWeekHigh,
-        fiftyTwoWeekLow: quote.fiftyTwoWeekLow,
-        avgVolume: quote.averageDailyVolume10Day || quote.averageDailyVolume3Month,
-        peRatio: quote.trailingPE,
-        dividendYield: quote.dividendYield ? quote.dividendYield * 100 : undefined,
-        beta: quote.beta,
-        eps: quote.epsTrailingTwelveMonths,
+        fiftyTwoWeekHigh: meta.fiftyTwoWeekHigh,
+        fiftyTwoWeekLow: meta.fiftyTwoWeekLow,
+        avgVolume: meta.averageDailyVolume10Day || meta.averageDailyVolume3Month,
+        peRatio: meta.trailingPE,
+        dividendYield: meta.dividendYield ? meta.dividendYield * 100 : undefined,
+        beta: meta.beta,
+        eps: meta.epsTrailingTwelveMonths,
       }
 
-      console.log(`✅ yahoo-finance2 data for ${ticker}:`, data)
+      console.log(`✅ Netlify Function data for ${ticker}:`, data)
       setCache(cacheKey, data)
       return data
     }
