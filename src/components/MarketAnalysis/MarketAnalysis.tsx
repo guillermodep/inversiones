@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button'
 import { SkeletonTable } from '@/components/ui/Skeleton'
 import Pagination from '@/components/ui/Pagination'
 import Sparkline from '@/components/ui/Sparkline'
+import ProgressBar from '@/components/ui/ProgressBar'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
 import { Search, Cpu, Heart, Pill, Zap, Building2, ShoppingCart, Car, DollarSign, ShoppingBag, Home, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
@@ -38,6 +39,9 @@ export default function MarketAnalysis() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(10)
+  const [loadingProgress, setLoadingProgress] = useState(0)
+  const [totalToLoad, setTotalToLoad] = useState(0)
+  const [loadedCount, setLoadedCount] = useState(0)
 
   useEffect(() => {
     loadPopularStocks()
@@ -51,6 +55,10 @@ export default function MarketAnalysis() {
       industries.flatMap(ind => ind.tickers)
     ))
     
+    setTotalToLoad(allTickers.length)
+    setLoadedCount(0)
+    setLoadingProgress(0)
+    
     // Load in batches to avoid rate limiting (429 errors)
     const batchSize = 5
     const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
@@ -62,6 +70,11 @@ export default function MarketAnalysis() {
         batch.map((ticker) => getStockQuote(ticker))
       )
       validStocks.push(...results.filter((r): r is StockData => r !== null))
+      
+      // Update progress
+      const loaded = Math.min(i + batchSize, allTickers.length)
+      setLoadedCount(loaded)
+      setLoadingProgress((loaded / allTickers.length) * 100)
       
       // Update UI progressively
       setAllStocks([...validStocks])
@@ -81,9 +94,17 @@ export default function MarketAnalysis() {
       
       // Wait between batches to avoid rate limiting
       if (i + batchSize < allTickers.length) {
-        await delay(1000) // 1 second delay between batches
+        await delay(200) // 1 second delay between batches
       }
     }
+    
+    // Reset progress when done
+    setLoadingProgress(100)
+    setTimeout(() => {
+      setLoadingProgress(0)
+      setLoadedCount(0)
+      setTotalToLoad(0)
+    }, 1000)
   }
 
   function handleIndustryFilter(industry: string) {
@@ -305,6 +326,16 @@ export default function MarketAnalysis() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Acciones Populares</h2>
         </div>
+        
+        {/* Progress bar while loading */}
+        {loadingProgress > 0 && loadingProgress < 100 && (
+          <div className="mb-4">
+            <ProgressBar 
+              progress={loadingProgress} 
+              message={`Cargando acciones: ${loadedCount}/${totalToLoad}`}
+            />
+          </div>
+        )}
         
         <div className="flex flex-wrap gap-2 mb-4">
           {industries.map((industry) => {
