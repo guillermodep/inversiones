@@ -1,4 +1,4 @@
-import { Portfolio, PortfolioPosition } from '@/types'
+import { PortfolioPosition } from '@/types'
 import { getStockQuote } from './marketDataService'
 
 export async function calculatePortfolioValue(

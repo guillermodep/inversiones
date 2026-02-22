@@ -6,53 +6,6 @@ import { env } from '@/config/env'
 const ALPHA_VANTAGE_BASE = 'https://www.alphavantage.co/query'
 const FMP_BASE = 'https://financialmodelingprep.com/api/v3'
 
-function filterDataByRange(data: HistoricalData[], range: string): HistoricalData[] {
-  const now = new Date()
-  let daysToInclude = 90 // default 3M
-  
-  switch (range) {
-    case '1D':
-      daysToInclude = 1
-      break
-    case '1W':
-      daysToInclude = 7
-      break
-    case '1M':
-      daysToInclude = 30
-      break
-    case '3M':
-      daysToInclude = 90
-      break
-    case '6M':
-      daysToInclude = 180
-      break
-    case 'YTD':
-      const yearStart = new Date(now.getFullYear(), 0, 1)
-      const daysSinceYearStart = Math.floor((now.getTime() - yearStart.getTime()) / (24 * 60 * 60 * 1000))
-      daysToInclude = daysSinceYearStart
-      break
-    case '1Y':
-      daysToInclude = 365
-      break
-    case '2Y':
-      daysToInclude = 730
-      break
-    case '5Y':
-      daysToInclude = 1825
-      break
-    case '10Y':
-      daysToInclude = 3650
-      break
-    case 'ALL':
-      return data // Return all data
-    default:
-      daysToInclude = 90
-  }
-  
-  const cutoffDate = new Date(now.getTime() - daysToInclude * 24 * 60 * 60 * 1000)
-  return data.filter(item => new Date(item.date) >= cutoffDate)
-}
-
 // Mock stock data for popular stocks (CORS prevents direct API calls from browser)
 const mockStockData: Record<string, { name: string; basePrice: number; marketCap: number }> = {
   'AAPL': { name: 'Apple Inc.', basePrice: 178.50, marketCap: 2800000000000 },

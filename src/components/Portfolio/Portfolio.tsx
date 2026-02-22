@@ -5,7 +5,6 @@ import { calculatePortfolioValue, calculatePositionPnL } from '@/services/portfo
 import { analyzePortfolio } from '@/services/llmService'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import Loading from '@/components/ui/Loading'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 import { Plus, Trash2, Sparkles } from 'lucide-react'
 import { hasLLMConfig } from '@/config/env'

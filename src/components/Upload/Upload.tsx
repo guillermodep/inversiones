@@ -93,7 +93,7 @@ export default function Upload() {
                 className="hidden"
                 disabled={loading}
               />
-              <Button as="span" disabled={loading}>
+              <Button disabled={loading}>
                 <UploadIcon size={18} className="mr-2" />
                 {loading ? 'Procesando...' : 'Seleccionar Archivo'}
               </Button>
@@ -116,7 +116,7 @@ export default function Upload() {
                 className="hidden"
                 disabled={loading || !hasLLMConfig()}
               />
-              <Button as="span" disabled={loading || !hasLLMConfig()}>
+              <Button disabled={loading || !hasLLMConfig()}>
                 <UploadIcon size={18} className="mr-2" />
                 {loading ? 'Procesando...' : 'Seleccionar Imagen'}
               </Button>
