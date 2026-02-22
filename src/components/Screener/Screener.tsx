@@ -71,7 +71,7 @@ const strategies = [
     description: 'Líderes tecnológicos, innovación y crecimiento',
     icon: Sparkles,
     tickers: ['AAPL', 'MSFT', 'GOOGL', 'META', 'NVDA', 'AMD', 'INTC', 'ORCL'],
-    criteria: (stock: StockData) => true
+    criteria: () => true
   },
 ]
 
