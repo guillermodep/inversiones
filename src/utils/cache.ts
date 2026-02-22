@@ -10,13 +10,14 @@ export function setCache<T>(key: string, data: T): void {
   localStorage.setItem(key, JSON.stringify(entry))
 }
 
-export function getCache<T>(key: string): T | null {
+export function getCache<T>(key: string, durationMinutes?: number): T | null {
   const item = localStorage.getItem(key)
   if (!item) return null
 
   try {
     const entry: CacheEntry<T> = JSON.parse(item)
-    const isExpired = Date.now() - entry.timestamp > CACHE_DURATION
+    const cacheDuration = durationMinutes ? durationMinutes * 60 * 1000 : CACHE_DURATION
+    const isExpired = Date.now() - entry.timestamp > cacheDuration
     
     if (isExpired) {
       localStorage.removeItem(key)
