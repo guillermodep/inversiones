@@ -7,6 +7,7 @@ import Card from '@/components/ui/Card'
 import { SkeletonMetricCard, SkeletonCard } from '@/components/ui/Skeleton'
 import FadeIn from '@/components/ui/FadeIn'
 import CountUp from '@/components/ui/CountUp'
+import MarketHeatmap from '@/components/ui/MarketHeatmap'
 import { formatCurrency, formatPercent } from '@/utils/formatters'
 import { getCache, setCache } from '@/utils/cache'
 import { TrendingUp, TrendingDown, Newspaper, AlertTriangle, Wallet, PieChart, BarChart3, Activity } from 'lucide-react'
@@ -43,6 +44,7 @@ export default function Dashboard() {
   const [topGainers, setTopGainers] = useState<TopMover[]>([])
   const [topLosers, setTopLosers] = useState<TopMover[]>([])
   const [sectorAllocation, setSectorAllocation] = useState<{[key: string]: number}>({})
+  const [heatmapData, setHeatmapData] = useState<Array<TopMover & { category: 'stock' | 'etf' | 'bond' }>>([])
 
   useEffect(() => {
     loadDashboardData()
@@ -55,13 +57,15 @@ export default function Dashboard() {
       const cachedIndices = getCache<StockData[]>('dashboard_indices')
       const cachedNews = getCache<NewsItem[]>('dashboard_news')
       const cachedTopMovers = getCache<{ gainers: TopMover[], losers: TopMover[] }>('dashboard_top_movers')
+      const cachedHeatmap = getCache<Array<TopMover & { category: 'stock' | 'etf' | 'bond' }>>('dashboard_heatmap')
       
       // If we have cached data, use it immediately
-      if (cachedIndices && cachedNews && cachedTopMovers) {
+      if (cachedIndices && cachedNews && cachedTopMovers && cachedHeatmap) {
         setIndices(cachedIndices)
         setNews(cachedNews)
         setTopGainers(cachedTopMovers.gainers)
         setTopLosers(cachedTopMovers.losers)
+        setHeatmapData(cachedHeatmap)
         setLoading(false)
         
         // Still calculate portfolio metrics (they depend on current prices)
@@ -84,6 +88,7 @@ export default function Dashboard() {
       
       await calculatePortfolioMetrics()
       await loadTopMovers()
+      await loadHeatmapData()
     } catch (error) {
       console.error('Error loading dashboard:', error)
     } finally {
@@ -156,6 +161,57 @@ export default function Dashboard() {
     
     // Cache top movers
     setCache('dashboard_top_movers', { gainers, losers })
+  }
+
+  async function loadHeatmapData() {
+    const tickers = [
+      // Stocks
+      { ticker: 'AAPL', category: 'stock' as const },
+      { ticker: 'MSFT', category: 'stock' as const },
+      { ticker: 'GOOGL', category: 'stock' as const },
+      { ticker: 'META', category: 'stock' as const },
+      { ticker: 'NVDA', category: 'stock' as const },
+      { ticker: 'TSLA', category: 'stock' as const },
+      { ticker: 'AMZN', category: 'stock' as const },
+      { ticker: 'JPM', category: 'stock' as const },
+      { ticker: 'V', category: 'stock' as const },
+      { ticker: 'JNJ', category: 'stock' as const },
+      // ETFs
+      { ticker: 'SPY', category: 'etf' as const },
+      { ticker: 'QQQ', category: 'etf' as const },
+      { ticker: 'VOO', category: 'etf' as const },
+      { ticker: 'IWM', category: 'etf' as const },
+      { ticker: 'VTI', category: 'etf' as const },
+      // Bonds
+      { ticker: 'TLT', category: 'bond' as const },
+      { ticker: 'AGG', category: 'bond' as const },
+      { ticker: 'BND', category: 'bond' as const },
+      { ticker: 'IEF', category: 'bond' as const },
+      { ticker: 'LQD', category: 'bond' as const },
+    ]
+
+    const heatmapItems: Array<TopMover & { category: 'stock' | 'etf' | 'bond' }> = []
+
+    for (const { ticker, category } of tickers) {
+      try {
+        const quote = await getStockQuote(ticker)
+        if (quote) {
+          heatmapItems.push({
+            ticker: quote.ticker,
+            name: quote.name,
+            change: quote.change,
+            changePercent: quote.changePercent,
+            price: quote.price,
+            category
+          })
+        }
+      } catch (error) {
+        console.error(`Error loading ${ticker}:`, error)
+      }
+    }
+
+    setHeatmapData(heatmapItems)
+    setCache('dashboard_heatmap', heatmapItems)
   }
 
   function getSector(ticker: string): string {
