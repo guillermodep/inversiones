@@ -4,15 +4,27 @@
 
 @layer base {
   body {
-    @apply bg-background text-gray-100 antialiased;
+    @apply text-gray-100 antialiased;
     font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     line-height: 1.5;
     font-weight: 400;
 
     color-scheme: dark;
     color: rgba(255, 255, 255, 0.87);
-    background-color: #0a0a0a;
+    
+    /* Modern gradient background */
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1625 25%, #0f1419 50%, #1a1f2e 75%, #0d1117 100%);
+    background-attachment: fixed;
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
   }
+  
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
   * {
     transition-property: color, background-color, border-color, opacity, transform;
     transition-duration: 200ms;
