@@ -399,18 +399,3 @@ export async function searchStocks(query: string): Promise<StockData[]> {
     return []
   }
 }
-
-    return response.data.map((item: any) => ({
-      ticker: item.symbol,
-      name: item.name,
-      price: 0,
-      change: 0,
-      changePercent: 0,
-      volume: 0,
-      marketCap: 0,
-    }))
-  } catch (error) {
-    console.error('Error searching stocks:', error)
-    return []
-  }
-}
