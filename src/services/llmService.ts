@@ -13,6 +13,16 @@ interface AnalysisContext {
   currentPrice: number
 }
 
+export async function callLLM(messages: Array<{ role: string; content: string }>): Promise<string> {
+  if (env.llm.provider === 'azure') {
+    return callAzureOpenAI(messages)
+  } else if (env.llm.provider === 'openai') {
+    return callOpenAI(messages, env.llm.openai.apiKey, env.llm.openai.model)
+  } else {
+    return callAnthropic(messages, env.llm.anthropic.apiKey, env.llm.anthropic.model)
+  }
+}
+
 export async function analyzeStock(
   context: AnalysisContext
 ): Promise<LLMRecommendation> {
@@ -200,6 +210,46 @@ async function analyzeWithAnthropic(prompt: string, apiKey: string, model: strin
   } catch (error) {
     console.error('Error analyzing with Anthropic:', error)
     throw new Error('Error al analizar con Anthropic. Verifica tu API key.')
+  }
+}
+
+async function callAzureOpenAI(messages: Array<{ role: string; content: string }>): Promise<string> {
+  try {
+    const url = `${env.llm.azure.endpoint}/openai/deployments/${env.llm.azure.deployment}/chat/completions?api-version=${env.llm.azure.apiVersion}`
+    const response = await axios.post(
+      url,
+      { messages, max_completion_tokens: 32000 },
+      { headers: { 'api-key': env.llm.azure.apiKey, 'Content-Type': 'application/json' } }
+    )
+    return response.data.choices[0].message.content
+  } catch (error: any) {
+    throw new Error(`Error con Azure OpenAI: ${error.response?.data?.error?.message || error.message}`)
+  }
+}
+
+async function callOpenAI(messages: Array<{ role: string; content: string }>, apiKey: string, model: string): Promise<string> {
+  try {
+    const response = await axios.post(
+      `${OPENAI_BASE}/chat/completions`,
+      { model: model || 'gpt-4o', messages, temperature: 0.7 },
+      { headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' } }
+    )
+    return response.data.choices[0].message.content
+  } catch (error) {
+    throw new Error('Error con OpenAI. Verifica tu API key.')
+  }
+}
+
+async function callAnthropic(messages: Array<{ role: string; content: string }>, apiKey: string, model: string): Promise<string> {
+  try {
+    const response = await axios.post(
+      `${ANTHROPIC_BASE}/messages`,
+      { model: model || 'claude-sonnet-4-20250514', max_tokens: 4000, messages },
+      { headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' } }
+    )
+    return response.data.content[0].text
+  } catch (error) {
+    throw new Error('Error con Anthropic. Verifica tu API key.')
   }
 }
 

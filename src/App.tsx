@@ -8,6 +8,7 @@ import PortfolioBuilder from './components/PortfolioBuilder/PortfolioBuilder'
 import Screener from './components/Screener/Screener'
 import Upload from './components/Upload/Upload'
 import Settings from './components/Settings/Settings'
+import AIAdvisor from './components/AIAdvisor/AIAdvisor'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/ai-advisor" element={<AIAdvisor />} />
           <Route path="/market" element={<MarketAnalysis />} />
           <Route path="/stock/:ticker" element={<StockDetail />} />
           <Route path="/portfolio" element={<Portfolio />} />

@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Brain
 } from 'lucide-react'
 
 interface LayoutProps {
@@ -25,6 +26,7 @@ export default function Layout({ children }: LayoutProps) {
 
   const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { path: '/ai-advisor', icon: Brain, label: 'Asesor IA' },
     { path: '/market', icon: TrendingUp, label: 'Mercado' },
     { path: '/portfolio', icon: Briefcase, label: 'Portfolio' },
     { path: '/portfolio-builder', icon: Sparkles, label: 'Crear Portfolio' },
