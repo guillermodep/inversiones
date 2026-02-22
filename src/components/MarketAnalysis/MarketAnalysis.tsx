@@ -13,18 +13,41 @@ export default function MarketAnalysis() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<StockData[]>([])
   const [popularStocks, setPopularStocks] = useState<StockData[]>([])
+  const [popularETFs, setPopularETFs] = useState<StockData[]>([])
+  const [popularBonds, setPopularBonds] = useState<StockData[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     loadPopularStocks()
+    loadPopularETFs()
+    loadPopularBonds()
   }, [])
 
   async function loadPopularStocks() {
-    const tickers = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM']
+    const tickers = [
+      'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM',
+      'V', 'WMT', 'DIS', 'NFLX', 'PYPL', 'INTC', 'AMD', 'BABA'
+    ]
     const results = await Promise.all(
       tickers.map((ticker) => getStockQuote(ticker))
     )
     setPopularStocks(results.filter((r): r is StockData => r !== null))
+  }
+
+  async function loadPopularETFs() {
+    const tickers = ['SPY', 'QQQ', 'IWM', 'VTI', 'VOO', 'DIA', 'EEM', 'GLD']
+    const results = await Promise.all(
+      tickers.map((ticker) => getStockQuote(ticker))
+    )
+    setPopularETFs(results.filter((r): r is StockData => r !== null))
+  }
+
+  async function loadPopularBonds() {
+    const tickers = ['TLT', 'IEF', 'SHY', 'AGG', 'BND', 'LQD', 'HYG', 'MUB']
+    const results = await Promise.all(
+      tickers.map((ticker) => getStockQuote(ticker))
+    )
+    setPopularBonds(results.filter((r): r is StockData => r !== null))
   }
 
   async function handleSearch(e: React.FormEvent) {
@@ -141,6 +164,58 @@ export default function MarketAnalysis() {
               </thead>
               <tbody>
                 {popularStocks.map((stock) => (
+                  <StockRow key={stock.ticker} stock={stock} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <h2 className="text-xl font-bold mb-4">ETFs Populares</h2>
+        {popularETFs.length === 0 ? (
+          <Loading />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-sm text-gray-400 border-b border-border">
+                  <th className="py-2 px-4">ETF</th>
+                  <th className="py-2 px-4 text-right">Precio</th>
+                  <th className="py-2 px-4 text-right">Cambio</th>
+                  <th className="py-2 px-4 text-right">Volumen</th>
+                  <th className="py-2 px-4 text-right">Market Cap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {popularETFs.map((stock) => (
+                  <StockRow key={stock.ticker} stock={stock} />
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      <Card>
+        <h2 className="text-xl font-bold mb-4">Bonos y ETFs de Renta Fija</h2>
+        {popularBonds.length === 0 ? (
+          <Loading />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-left text-sm text-gray-400 border-b border-border">
+                  <th className="py-2 px-4">Bono/ETF</th>
+                  <th className="py-2 px-4 text-right">Precio</th>
+                  <th className="py-2 px-4 text-right">Cambio</th>
+                  <th className="py-2 px-4 text-right">Volumen</th>
+                  <th className="py-2 px-4 text-right">Market Cap</th>
+                </tr>
+              </thead>
+              <tbody>
+                {popularBonds.map((stock) => (
                   <StockRow key={stock.ticker} stock={stock} />
                 ))}
               </tbody>
