@@ -219,7 +219,16 @@ export default function Portfolio() {
         <Card>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">{currentPortfolio.name}</h2>
+              <div>
+                <h2 className="text-xl font-bold">{currentPortfolio.name}</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  Creado: {new Date(currentPortfolio.createdAt).toLocaleDateString('es-ES', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </p>
+              </div>
               <Button onClick={handleAnalyzePortfolio} disabled={analyzing || !hasLLMConfig()}>
                 <Sparkles size={18} className="mr-2" />
                 {analyzing ? 'Analizando...' : 'Analizar con IA'}
@@ -245,11 +254,11 @@ export default function Portfolio() {
                   <tr className="text-left text-sm text-gray-400 border-b border-border">
                     <th className="py-2 px-4">Ticker</th>
                     <th className="py-2 px-4 text-right">Acciones</th>
+                    <th className="py-2 px-4">Fecha Compra</th>
                     <th className="py-2 px-4 text-right">Precio Compra</th>
                     <th className="py-2 px-4 text-right">Precio Actual</th>
                     <th className="py-2 px-4 text-right">Variación</th>
                     <th className="py-2 px-4 text-right">P&L</th>
-                    <th className="py-2 px-4">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -298,6 +307,13 @@ export default function Portfolio() {
                             </div>
                           )}
                         </td>
+                        <td className="py-3 px-4 text-sm text-gray-400">
+                          {new Date(position.purchaseDate).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          })}
+                        </td>
                         <td className="py-3 px-4 text-right">{formatCurrency(position.purchasePrice)}</td>
                         <td className="py-3 px-4 text-right">
                           <div>{formatCurrency(position.currentPrice || 0)}</div>
@@ -308,7 +324,6 @@ export default function Portfolio() {
                         <td className={`py-3 px-4 text-right ${pnl.pnl >= 0 ? 'text-profit' : 'text-loss'}`}>
                           {formatCurrency(pnl.pnl)} ({formatPercent(pnl.pnlPercent)})
                         </td>
-                        <td className="py-3 px-4 text-right">{position.shares}</td>
                       </tr>
                     )
                   })}
