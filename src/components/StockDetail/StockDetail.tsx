@@ -10,6 +10,8 @@ import StockChart from '@/components/StockChart/StockChart'
 import { formatCurrency, formatPercent, formatLargeNumber } from '@/utils/formatters'
 import { getInstrumentDescription, getInstrumentType } from '@/utils/instrumentDescriptions'
 import { hasLLMConfig } from '@/config/env'
+import AddToPortfolioModal from '@/components/AddToPortfolioModal/AddToPortfolioModal'
+import { Briefcase } from 'lucide-react'
 
 export default function StockDetail() {
   const { ticker } = useParams<{ ticker: string }>()
@@ -23,6 +25,7 @@ export default function StockDetail() {
   const [analysisError, setAnalysisError] = useState<string | null>(null)
   const [chartPeriod, setChartPeriod] = useState('3M')
   const [chartLoading, setChartLoading] = useState(false)
+  const [showAddToPortfolio, setShowAddToPortfolio] = useState(false)
 
   useEffect(() => {
     if (ticker) {
@@ -144,8 +147,8 @@ export default function StockDetail() {
         </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex-1 pr-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold">{stock.ticker}</h1>
             <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
@@ -157,13 +160,31 @@ export default function StockDetail() {
             {getInstrumentDescription(stock.ticker)}
           </p>
         </div>
-        <div className="text-right">
-          <p className="text-3xl font-bold">{formatCurrency(stock.price)}</p>
-          <p className={`text-lg ${stock.change >= 0 ? 'text-profit' : 'text-loss'}`}>
-            {formatPercent(stock.changePercent)}
-          </p>
+        <div className="text-right flex flex-col items-end gap-3">
+          <div>
+            <p className="text-3xl font-bold">{formatCurrency(stock.price)}</p>
+            <p className={`text-lg ${stock.change >= 0 ? 'text-profit' : 'text-loss'}`}>
+              {formatPercent(stock.changePercent)}
+            </p>
+          </div>
+          <button
+            onClick={() => setShowAddToPortfolio(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap"
+          >
+            <Briefcase size={18} />
+            Agregar a Portfolio
+          </button>
         </div>
       </div>
+
+      {showAddToPortfolio && (
+        <AddToPortfolioModal
+          ticker={stock.ticker}
+          name={stock.name}
+          currentPrice={stock.price}
+          onClose={() => setShowAddToPortfolio(false)}
+        />
+      )}
 
       <Card>
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
